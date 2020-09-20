@@ -1,6 +1,4 @@
-import java.awt.Dimension
-import java.awt.FlowLayout
-import java.awt.Toolkit
+import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.StringReader
@@ -25,9 +23,11 @@ class App {
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         val dim = Toolkit.getDefaultToolkit().screenSize
         frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
+        val BLUE_MEDIUM = Color(168, 194, 255)
 
         val mainPane = frame.contentPane
-        mainPane.layout = FlowLayout()
+        mainPane.layout = BorderLayout()
+        val tagPane = JPanel(FlowLayout())
         val hedTagInput = JTextArea(3, 10)
         hedTagInput.preferredSize = Dimension(300,300)
         val inputPane = JPanel()
@@ -36,14 +36,20 @@ class App {
         val list: JList<String>
         val listModel = DefaultListModel<String>()
         list = JList(listModel)
+        hedTagInput.document.addDocumentListener(HedTagInputListener(hedTagInput, list, listModel))
         val searchPanel = JScrollPane(list)
         searchPanel.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
         searchPanel.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
         searchPanel.preferredSize = Dimension(300,200)
-        mainPane.add(inputPane)
-        mainPane.add(searchPanel)
-        hedTagInput.document.addDocumentListener(HedTagInputListener(hedTagInput, list, listModel))
+        tagPane.add(inputPane)
+        tagPane.add(searchPanel)
+        mainPane.add(tagPane, BorderLayout.CENTER)
+        mainPane.add(JButton("Done"), BorderLayout.SOUTH)
 
+        frame.background = BLUE_MEDIUM
+        mainPane.background = BLUE_MEDIUM
+        tagPane.background = BLUE_MEDIUM
+        inputPane.background = BLUE_MEDIUM
         frame.pack()
         frame.isVisible = true
     }
