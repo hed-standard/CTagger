@@ -45,7 +45,9 @@ class App {
 
     class HedTagInputListener(val tc: JTextArea, val panel: JPanel, val editor: JTextArea) : DocumentListener {
         override fun insertUpdate(e: DocumentEvent) {
-            val word = getWordAtCaret("insert")
+//            print("insert. ")
+//            println("length: ${tc.text.length}, caret: ${tc.caretPosition}")
+            val word = getWordAtCaret(true)
             if (word != null) showSearchResult(searchTags(word))
         }
         override fun changedUpdate(e: DocumentEvent) {
@@ -53,20 +55,21 @@ class App {
         }
 
         override fun removeUpdate(e: DocumentEvent) {
-            val word = getWordAtCaret()
+//            print("remove. ")
+//            println("length: ${tc.text.length}, caret: ${tc.caretPosition}")
+            val word = getWordAtCaret(false)
             if (word != null) showSearchResult(searchTags(word))
         }
 
-        private fun getWordAtCaret(type: String = ""): String? {
-            // TODO make caret position work consistently
+        private fun getWordAtCaret(isInsert: Boolean): String? {
             try {
-                val wordStartPos = findBeginning()
-                val word = tc.getText(wordStartPos, tc.caretPosition - wordStartPos)
-                println(word)
-                return word
+                val wordStartPos = findBeginning(isInsert)
+                if (tc.text.length > wordStartPos && wordStartPos > -1 && tc.caretPosition > wordStartPos) {
+                    val word = tc.getText(wordStartPos, tc.caretPosition - wordStartPos)
+                    return word
+                }
             } catch (e: BadLocationException) {
                 System.err.println(e)
-                e.printStackTrace()
             }
             return null
         }
@@ -100,9 +103,12 @@ class App {
             }
         }
 
-        private fun findBeginning(): Int {
-            println("Caret position: ${tc.caretPosition}")
-            var wordStartPos = tc.caretPosition - 1
+        private fun findBeginning(isInsert: Boolean = false): Int {
+            var caretPosition: Int
+            if (isInsert) caretPosition = tc.caretPosition + 1 else caretPosition = tc.caretPosition - 1
+            var wordStartPos = caretPosition - 1
+            if (wordStartPos > tc.text.length) wordStartPos = -1
+//            println("length: ${tc.text.length}, startPos: $wordStartPos, caret: ${tc.caretPosition}")
             while (wordStartPos > 0 && !tc.getText(wordStartPos-1, 1).matches(Regex(",|\\s|\\(|\\)|\\t|\\n|\\r"))) {
                 --wordStartPos
             }
