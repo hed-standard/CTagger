@@ -1,14 +1,13 @@
-import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.FlowLayout
 import java.awt.Toolkit
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.io.StringReader
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
-import javax.swing.event.ListSelectionEvent
-import javax.swing.event.ListSelectionListener
 import javax.swing.text.BadLocationException
-import javax.swing.text.JTextComponent
 import javax.xml.bind.JAXBContext
 
 
@@ -16,34 +15,68 @@ val tags: MutableList<String> = mutableListOf()
 
 fun main() {
     getHedXmlModel()
-    val app = App()
+    SwingUtilities.invokeLater { App() }
 }
 
 class App {
     constructor() {
         val frame = JFrame("CTAGGER IDE version")
-        frame.size = Dimension(800, 800)
+        frame.setSize(1024, 800)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         val dim = Toolkit.getDefaultToolkit().screenSize
         frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
 
-        val mainPane = JPanel(BorderLayout())
-        val hedTagInput = JTextArea(30, 30)
-        val searchPanel = JPanel()
-        searchPanel.setSize(mainPane.width, mainPane.height)
-        hedTagInput.document.addDocumentListener(HedTagInputListener(hedTagInput, searchPanel, hedTagInput))
-
-        mainPane.add(hedTagInput, BorderLayout.CENTER)
-        mainPane.add(searchPanel, BorderLayout.SOUTH)
-
-        frame.contentPane.add(mainPane)
+        val mainPane = frame.contentPane
+        mainPane.layout = FlowLayout()
+        val hedTagInput = JTextArea(3, 10)
+        hedTagInput.preferredSize = Dimension(300,300)
+        val inputPane = JPanel()
+        inputPane.preferredSize = Dimension(300, 300)
+        inputPane.add(hedTagInput)
+        val list: JList<String>
+        val listModel = DefaultListModel<String>()
+        list = JList(listModel)
+        val searchPanel = JScrollPane(list)
+        searchPanel.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        searchPanel.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
+        searchPanel.preferredSize = Dimension(300,200)
+        mainPane.add(inputPane)
+        mainPane.add(searchPanel)
+        hedTagInput.document.addDocumentListener(HedTagInputListener(hedTagInput, list, listModel))
 
         frame.pack()
-        frame.repaint()
         frame.isVisible = true
     }
 
-    class HedTagInputListener(val tc: JTextArea, val panel: JPanel, val editor: JTextArea) : DocumentListener {
+    class HedTagInputListener(val tc: JTextArea, val list: JList<String>, val listModel: DefaultListModel<String>) : DocumentListener {
+        init{
+            list.addMouseListener(object : MouseAdapter() {
+                override fun mouseClicked(evt: MouseEvent) {
+                    val list = evt.getSource() as JList<String>
+                    if (evt.getClickCount() === 2) {
+
+                        // Double-click detected
+                        val index = list.locationToIndex(evt.getPoint())
+                        val selectedTag = list.selectedValue
+                        replaceWithTag(selectedTag)
+                    } else if (evt.getClickCount() === 3) {
+
+                        // Triple-click detected
+                        val index = list.locationToIndex(evt.getPoint())
+                    }
+                }
+            })
+        }
+        private fun replaceWithTag(selectedTag: String) {
+            try {
+                var wordStartPos = findBeginning()
+                val lastNode = selectedTag.split('/').last()
+                tc.replaceRange(null, wordStartPos, tc.caretPosition)
+                tc.insert(lastNode, wordStartPos)
+            } catch (e: BadLocationException) {
+                System.err.println(e)
+            }
+        }
         override fun insertUpdate(e: DocumentEvent) {
 //            print("insert. ")
 //            println("length: ${tc.text.length}, caret: ${tc.caretPosition}")
@@ -79,29 +112,10 @@ class App {
         }
 
         private fun showSearchResult(matchedTags: List<String>) {
-            val list = JList<String>(matchedTags.toTypedArray())
-            list.addListSelectionListener {
-                if (!it.valueIsAdjusting) {
-                    val selectedTag = list.selectedValue
-                    replaceWithTag(selectedTag)
-                }
-            }
-            val scrollPane = JScrollPane(list)
-            scrollPane.setSize(panel.width, panel.height)
-            panel.removeAll()
-            panel.add(scrollPane)
+            listModel.clear()
+            matchedTags.forEach { listModel.addElement(it) }
         }
 
-        private fun replaceWithTag(selectedTag: String) {
-            try {
-                var wordStartPos = findBeginning()
-                val lastNode = selectedTag.split('/').last()
-                tc.replaceRange(null,wordStartPos, tc.caretPosition)
-                tc.insert(lastNode, wordStartPos)
-            } catch (e: BadLocationException) {
-                System.err.println(e)
-            }
-        }
 
         private fun findBeginning(isInsert: Boolean = false): Int {
             var caretPosition: Int
