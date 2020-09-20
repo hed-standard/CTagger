@@ -1,6 +1,7 @@
 import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.awt.event.WindowEvent
 import java.io.StringReader
 import javax.swing.*
 import javax.swing.event.DocumentEvent
@@ -27,6 +28,11 @@ class App {
 
         val mainPane = frame.contentPane
         mainPane.layout = BorderLayout()
+
+        val codePane = JPanel(FlowLayout())
+        codePane.add(JLabel("Code: "))
+        val codeTF = JTextField(20)
+        codePane.add(codeTF)
         val tagPane = JPanel(FlowLayout())
         val hedTagInput = JTextArea(3, 10)
         hedTagInput.preferredSize = Dimension(300,300)
@@ -43,10 +49,21 @@ class App {
         searchPanel.preferredSize = Dimension(300,200)
         tagPane.add(inputPane)
         tagPane.add(searchPanel)
+
+        val doneBtn = JButton("Done")
+        doneBtn.addActionListener {
+            val finalMap = HashMap<String, String>()
+            finalMap.put("Code", codeTF.text)
+            finalMap.put("Tags", hedTagInput.text)
+            println(finalMap.toString())
+            frame.dispatchEvent(WindowEvent(frame, WindowEvent.WINDOW_CLOSING))
+        }
+        mainPane.add(codePane, BorderLayout.NORTH)
         mainPane.add(tagPane, BorderLayout.CENTER)
-        mainPane.add(JButton("Done"), BorderLayout.SOUTH)
+        mainPane.add(doneBtn, BorderLayout.SOUTH)
 
         frame.background = BLUE_MEDIUM
+        codePane.background = BLUE_MEDIUM
         mainPane.background = BLUE_MEDIUM
         tagPane.background = BLUE_MEDIUM
         inputPane.background = BLUE_MEDIUM
