@@ -1,103 +1,119 @@
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.Toolkit
-import java.io.IOException
 import java.io.StringReader
-import javax.swing.JButton
-import javax.swing.JFrame
-import javax.swing.JPanel
-import javax.swing.JTextArea
+import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
+import javax.swing.event.ListSelectionEvent
+import javax.swing.event.ListSelectionListener
 import javax.swing.text.BadLocationException
 import javax.swing.text.JTextComponent
-import javax.swing.text.Utilities
 import javax.xml.bind.JAXBContext
 
 
-var tags: MutableList<String> = mutableListOf()
-var hedXmlModel = HedXmlModel()
+val tags: MutableList<String> = mutableListOf()
+
+fun main() {
+    getHedXmlModel()
+    val app = App()
+}
 
 class App {
-    val frame: JFrame
-    val hedTagInput: JTextArea
-
     constructor() {
-        frame = JFrame("CTAGGER IDE version")
+        val frame = JFrame("CTAGGER IDE version")
         frame.size = Dimension(800, 800)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         val dim = Toolkit.getDefaultToolkit().screenSize
         frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
 
         val mainPane = JPanel(BorderLayout())
-        hedTagInput = JTextArea(30, 30)
-        hedTagInput.document.addDocumentListener(HedTagInputListener())
-        hedTagInput.document.putProperty("owner", hedTagInput) //set the owner
+        val hedTagInput = JTextArea(30, 30)
+        val searchPanel = JPanel()
+        searchPanel.setSize(mainPane.width, mainPane.height)
+        hedTagInput.document.addDocumentListener(HedTagInputListener(hedTagInput, searchPanel, hedTagInput))
 
         mainPane.add(hedTagInput, BorderLayout.CENTER)
+        mainPane.add(searchPanel, BorderLayout.SOUTH)
 
         frame.contentPane.add(mainPane)
 
-    }
-
-    fun startApp() {
         frame.pack()
         frame.repaint()
         frame.isVisible = true
     }
 
-
-
-    class HedTagInputListener : DocumentListener {
+    class HedTagInputListener(val tc: JTextArea, val panel: JPanel, val editor: JTextArea) : DocumentListener {
         override fun insertUpdate(e: DocumentEvent) {
-            val tc = e.document.getProperty("owner")
-            if (tc is JTextArea) {
-                val word = getWordAtCaret(tc, "insert")
-                if (word != null) searchTags(word).map{println(it)}
-            }
+            val word = getWordAtCaret("insert")
+            if (word != null) showSearchResult(searchTags(word))
         }
         override fun changedUpdate(e: DocumentEvent) {
 
         }
 
         override fun removeUpdate(e: DocumentEvent) {
-            val tc = e.document.getProperty("owner")
-            if (tc is JTextArea) {
-                val word = getWordAtCaret(tc)
-                if (word != null) searchTags(word).map{println(it)}
-            }
+            val word = getWordAtCaret()
+            if (word != null) showSearchResult(searchTags(word))
         }
-        fun getWordAtCaret(tc: JTextComponent, type: String = ""): String? {
+
+        private fun getWordAtCaret(type: String = ""): String? {
+            // TODO make caret position work consistently
             try {
-                var caretPosition = tc.caretPosition
-                if (type == "insert") ++caretPosition
-                var wordStartPos = caretPosition - 1
-                while (wordStartPos > 0 && tc.getText(wordStartPos-1, 1) != " ") {
-                    --wordStartPos
-                }
-                    val word = tc.getText(wordStartPos, caretPosition - wordStartPos)
-                    println(word)
-                    return word
+                val wordStartPos = findBeginning()
+                val word = tc.getText(wordStartPos, tc.caretPosition - wordStartPos)
+                println(word)
+                return word
             } catch (e: BadLocationException) {
                 System.err.println(e)
+                e.printStackTrace()
             }
             return null
         }
-        protected fun searchTags(input: String): List<String> {
+        private fun searchTags(input: String): List<String> {
             // TODO optimize
             return tags.filter{ it.contains(input, true)} // beautiful syntax comparing to Java!
+        }
+
+        private fun showSearchResult(matchedTags: List<String>) {
+            val list = JList<String>(matchedTags.toTypedArray())
+            list.addListSelectionListener {
+                if (!it.valueIsAdjusting) {
+                    val selectedTag = list.selectedValue
+                    replaceWithTag(selectedTag)
+                }
+            }
+            val scrollPane = JScrollPane(list)
+            scrollPane.setSize(panel.width, panel.height)
+            panel.removeAll()
+            panel.add(scrollPane)
+        }
+
+        private fun replaceWithTag(selectedTag: String) {
+            try {
+                var wordStartPos = findBeginning()
+                val lastNode = selectedTag.split('/').last()
+                tc.replaceRange(null,wordStartPos, tc.caretPosition)
+                tc.insert(lastNode, wordStartPos)
+            } catch (e: BadLocationException) {
+                System.err.println(e)
+            }
+        }
+
+        private fun findBeginning(): Int {
+            println("Caret position: ${tc.caretPosition}")
+            var wordStartPos = tc.caretPosition - 1
+            while (wordStartPos > 0 && !tc.getText(wordStartPos-1, 1).matches(Regex(",|\\s|\\(|\\)|\\t|\\n|\\r"))) {
+                --wordStartPos
+            }
+            return wordStartPos
         }
     }
 }
 
-fun main() {
-    getHedXmlModel()
-    val app = App()
-    app.startApp()
-}
-
 fun getHedXmlModel() {
     val xmlData = TestUtilities.getResourceAsString(TestUtilities.HedFileName)
+    val hedXmlModel: HedXmlModel
     try {
         val context = JAXBContext.newInstance(HedXmlModel::class.java)
         hedXmlModel = context.createUnmarshaller().unmarshal(StringReader(xmlData)) as HedXmlModel
