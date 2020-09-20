@@ -1,3 +1,4 @@
+import com.google.gson.Gson
 import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -55,7 +56,8 @@ class App {
             val finalMap = HashMap<String, String>()
             finalMap.put("Code", codeTF.text)
             finalMap.put("Tags", hedTagInput.text)
-            println(finalMap.toString())
+            val gson = Gson()
+            println(gson.toJson(finalMap).toString())
             frame.dispatchEvent(WindowEvent(frame, WindowEvent.WINDOW_CLOSING))
         }
         mainPane.add(codePane, BorderLayout.NORTH)
