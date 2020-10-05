@@ -28,14 +28,20 @@ class HedTagList(val tags: List<String>) : JList<String>() {
         hedInput = null
     }
 
-    fun showSearchResult(target: String) {
+    // return size of the matchedTags list
+    fun showSearchResult(target: String) : Int{
         val matchedTags = searchTags(target)
         listModel.clear()
         matchedTags.forEach { listModel.addElement(it) }
+        return matchedTags.size
     }
 
     private fun searchTags(input: String): List<String> {
         // TODO optimize
-        return tags.filter { it.contains(input, true) } // beautiful syntax comparing to Java!
+        return tags.filter {
+            // parse takeValues node if applicable
+            val splitted = input.split('/')
+            it.contains(input, true) || (splitted.size >= 2 && it.contains(splitted[splitted.size-2] + "/#", true))
+        } // beautiful syntax comparing to Java!
     }
 }

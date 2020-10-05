@@ -1,13 +1,11 @@
 import com.google.gson.Gson
+import com.univocity.parsers.tsv.TsvParser
+import com.univocity.parsers.tsv.TsvParserSettings
 import java.awt.*
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
 import java.awt.event.WindowEvent
+import java.io.File
 import java.io.StringReader
 import javax.swing.*
-import javax.swing.event.DocumentEvent
-import javax.swing.event.DocumentListener
-import javax.swing.text.BadLocationException
 import javax.xml.bind.JAXBContext
 
 
@@ -17,24 +15,28 @@ fun main() {
 }
 
 class CTagger {
-    val frame: JFrame
-    val tags: MutableList<String> = mutableListOf()
-    val finalMap = HashMap<String, String>()
+    val frame = JFrame("CTAGGER")
+    private val tags: MutableList<String> = mutableListOf()
+    val fieldMap = HashMap<String, HashMap<String,String>>()
+    var fieldCB = JComboBox<String>()
     var eventCodeList: EventCodeList
     var hedTagInput: HedTagInput
     var hedTagList: HedTagList
-    val BLUE_MEDIUM = Color(168, 194, 255)
+    var curField: String? = null
+    lateinit var eventFile: Array<Array<String>>
+    lateinit var eventFileAnnotation: EventFileAnnotation
+    var fieldAndUniqueCodeMap = HashMap<String, List<String>>()
+    private val BLUE_MEDIUM = Color(168, 194, 255)
 
     init {
         getHedXmlModel()
-        eventCodeList = EventCodeList(setOf("1", "2", "3"), this)
+        eventCodeList = EventCodeList(this)
         hedTagInput = HedTagInput(this)
         hedTagList = HedTagList(tags)
         hedTagList.hedInput = hedTagInput
         hedTagInput.tagList = hedTagList
     }
     constructor() {
-        frame = JFrame("CTAGGER IDE version")
         frame.setSize(1024, 800)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         val dim = Toolkit.getDefaultToolkit().screenSize
@@ -43,7 +45,8 @@ class CTagger {
         val mainPane = frame.contentPane
         mainPane.layout = BorderLayout()
 
-        addCodePane(mainPane)
+        createMenuBar()
+        addFieldSelectionPane(mainPane)
         addTagPane(mainPane)
         addDoneBtn(mainPane)
 
@@ -52,14 +55,102 @@ class CTagger {
         frame.pack()
         frame.isVisible = true
     }
-    private fun addCodePane(mainPane: Container) {
-        val codePane = JPanel(FlowLayout())
-        codePane.add(JLabel("Code: "))
-        val codeTF = JTextField(20)
-        codePane.add(codeTF)
-        codePane.background = BLUE_MEDIUM
 
-        mainPane.add(codePane, BorderLayout.NORTH)
+    private fun createMenuBar() {
+        val menuBar = JMenuBar()
+
+        // File menu item
+        var menu = JMenu("File")
+        menuBar.add(menu)
+
+        // Import event file menu item
+        var submenu = JMenu("Import")
+        var menuItem = JMenuItem("Import BIDS events.tsv file")
+        menuItem.addActionListener {
+            val fc = JFileChooser()
+            val fileChosen = fc.showOpenDialog(frame)
+            if (fileChosen == JFileChooser.APPROVE_OPTION) {
+                val file = fc.selectedFile
+                getEventInfo(file)
+            }
+        }
+        submenu.add(menuItem)
+        menuItem = JMenuItem("Import tag file")
+        submenu.add(menuItem)
+        menu.add(submenu)
+
+        frame.setJMenuBar(menuBar)
+    }
+
+    // Retrieve event info from .tsv file
+    // and populate GUI
+    private fun getEventInfo(file: File) {
+        // reset if not empty
+        if (fieldMap.isNotEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Clearing fieldMap")
+            curField = null
+            fieldAndUniqueCodeMap.clear()
+            fieldMap.clear()
+            fieldCB.removeAll()
+        }
+        val settings = TsvParserSettings()
+        val parser = TsvParser(settings)
+        val allRows = parser.parseAll(file)
+        eventFile = allRows.toTypedArray()
+        val eventFileColumnMajor = Array(allRows[0].size) { Array(allRows.size) {""} }
+        for ((rowIndex, row) in allRows.withIndex()) {
+            for ((colIndex, col) in row.withIndex()) {
+                eventFileColumnMajor[colIndex][rowIndex] = col
+            }
+        }
+        eventFileColumnMajor.forEach {
+            // assuming that first row contains field names as BIDS TSV
+            val field = it[0]
+            // add fields to combo box
+            fieldCB.addItem(field)
+            // add unique codes to each field, ignoring BIDS default numerical fields
+            if (!listOf("duration", "onset", "sample", "stim_file", "HED", "response_time").contains(field)) {
+                fieldAndUniqueCodeMap[field] = it.slice(1 until it.size).distinct()
+            } else {
+                fieldAndUniqueCodeMap[field] = listOf("hed_string")
+            }
+            // initialize fieldMap
+            fieldMap[field] = HashMap()
+            fieldAndUniqueCodeMap[field]!!.forEach { fieldMap[field]!![it] = "" }
+
+            // initialize tagging GUI
+            eventFileAnnotation = EventFileAnnotation(frame, this)
+        }
+    }
+    private fun addFieldSelectionPane(mainPane: Container) {
+        val fieldSelectionPane = JPanel(FlowLayout())
+        fieldSelectionPane.add(JLabel("Tagging field: "))
+        fieldCB.addActionListener {
+            // save work of previous field
+            if (curField != null) {
+                val map = fieldMap[curField!!]
+                val key = eventCodeList.prevSelected
+                eventCodeList.prevSelected = null
+                if (map != null && key != null)
+                    map[key] = hedTagInput.text
+                hedTagInput.text = null
+            }
+            // set new field and new code list
+            curField = fieldCB.selectedItem.toString()
+            if (curField != null && fieldAndUniqueCodeMap.containsKey(curField!!)) {
+                // get unique event codes
+                eventCodeList.codeSet = fieldAndUniqueCodeMap[curField!!]!!
+            }
+        }
+        fieldSelectionPane.add(fieldCB)
+        val eventFileTagBtn = JButton("Tag event file")
+        eventFileTagBtn.addActionListener {
+            eventFileAnnotation.isVisible = true
+        }
+        fieldSelectionPane.add(eventFileTagBtn)
+        fieldSelectionPane.background = BLUE_MEDIUM
+
+        mainPane.add(fieldSelectionPane, BorderLayout.NORTH)
     }
     private fun addTagPane(mainPane: Container) {
         val eventPanel = JScrollPane(eventCodeList)
@@ -93,7 +184,7 @@ class CTagger {
         val doneBtn = JButton("Done")
         doneBtn.addActionListener {
             val gson = Gson()
-            val finalJson = gson.toJson(finalMap).toString()
+            val finalJson = gson.toJson(fieldMap).toString()
 
             println(finalJson)
             JOptionPane.showMessageDialog(frame,
@@ -105,7 +196,9 @@ class CTagger {
 
         mainPane.add(doneBtn, BorderLayout.SOUTH)
     }
-    fun getHedXmlModel() {
+
+    // Parse HED XML
+    private fun getHedXmlModel() {
         val xmlData = TestUtilities.getResourceAsString(TestUtilities.HedFileName)
         val hedXmlModel: HedXmlModel
         try {
@@ -119,7 +212,8 @@ class CTagger {
         populateTagSets("", hedXmlModel.tags)
     }
 
-    fun populateTagSets(path: String, tagSets: Set<TagXmlModel>) {
+    // Add tags recursively
+    private fun populateTagSets(path: String, tagSets: Set<TagXmlModel>) {
         for (tagXmlModel: TagXmlModel in tagSets) {
             tags.add(path + tagXmlModel.name)
             populateTagSets(path + tagXmlModel.name + "/", tagXmlModel.tags)

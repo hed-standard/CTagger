@@ -1,31 +1,52 @@
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import javax.swing.DefaultListModel
 import javax.swing.JList
 import javax.swing.event.ListSelectionEvent
 import javax.swing.event.ListSelectionListener
 
-class EventCodeList(codeSet: Set<String>, val tagger: CTagger) : JList<String>() {
+class EventCodeList(val tagger: CTagger) : JList<String>() {
     private val listModel = DefaultListModel<String>()
-    private var prevSelected: String? = null
+    var prevSelected: String? = null
+    var codeSet: List<String> = listOf()
+        set(value) {
+            field = value
+            listModel.clear()
+            updateListModel()
+        }
 
     init {
-        codeSet.forEach{ listModel.addElement(it); tagger.finalMap[it] = "" }
         model = listModel
-        addListSelectionListener(EventCodeListListener())
+        addMouseListener(EventCodeListListener())
     }
 
-    private class EventCodeListListener: ListSelectionListener {
-        override fun valueChanged(e: ListSelectionEvent) {
-            val eList = e.source as EventCodeList
-            val tagger = eList.tagger
-            val selected = eList.selectedValue
-            var prevSelected = eList.prevSelected
+    private fun updateListModel() {
+        if (listModel.isEmpty)
+            codeSet.forEach{ listModel.addElement(it) }
+    }
+    private class EventCodeListListener: MouseAdapter() {
+        override fun mouseClicked(e: MouseEvent?) {
+            super.mouseClicked(e)
+            if (e != null) {
+                val eList = e.source as EventCodeList
+                if (!eList.valueIsAdjusting) {
+                    val tagger = eList.tagger
+                    val selected = eList.selectedValue
+                    println("code $selected selected")
+                    var prevSelected = eList.prevSelected
+                    println(tagger.fieldMap)
+                    val codeMap = tagger.fieldMap[tagger.curField]
 
-            if (prevSelected != null)
-                tagger.finalMap[prevSelected] = tagger.hedTagInput.text
-            eList.prevSelected = selected
+                    // save current tags
+                    if (codeMap != null && prevSelected != null) // TODO
+                        codeMap[prevSelected] = tagger.hedTagInput.text
+                    eList.prevSelected = selected
 
-            if (tagger.finalMap.containsKey(selected))
-                tagger.hedTagInput.text = tagger.finalMap[selected]
+                    // set hedTagInput to new text
+                    if (codeMap != null && codeMap.containsKey(selected))
+                        tagger.hedTagInput.text = codeMap[selected]
+                }
+            }
         }
     }
 }

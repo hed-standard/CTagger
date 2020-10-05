@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public abstract class TestUtilities {
 
-	public static final String HedFileName = "/Users/dtyoung/Desktop/ide-ctagger/HEDLatest.xml"; // TODO change back to relative path
+	public static final String HedFileName = "./HEDLatest.xml"; // TODO change back to relative path
 	public static final String HedRequiredRecommended = 
 			"data/testHedRequired.xml";
 	public static final String JsonEventsArrays = 
