@@ -7,7 +7,7 @@ import javax.swing.JTable
 class EventFileAnnotation(frame: JFrame, val tagger: CTagger) : JDialog(frame) {
     init {
         this.setPreferredSize(Dimension(500, 500))
-        var columnNames = tagger.fieldMap.keys
+        var columnNames = tagger.fieldMap.keys.toMutableList()
         columnNames.add("HED tags")
         val table = JTable(tagger.eventFile, columnNames.toTypedArray())
         table.setPreferredScrollableViewportSize(Dimension(500, 70))

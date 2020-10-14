@@ -28,6 +28,7 @@ class CTagger {
     var fieldAndUniqueCodeMap = HashMap<String, List<String>>()
     private val BLUE_MEDIUM = Color(168, 194, 255)
 
+
     init {
         getHedXmlModel()
         eventCodeList = EventCodeList(this)
@@ -54,6 +55,7 @@ class CTagger {
         mainPane.background = BLUE_MEDIUM
         frame.pack()
         frame.isVisible = true
+
     }
 
     private fun createMenuBar() {
@@ -118,9 +120,9 @@ class CTagger {
             fieldMap[field] = HashMap()
             fieldAndUniqueCodeMap[field]!!.forEach { fieldMap[field]!![it] = "" }
 
-            // initialize tagging GUI
-            eventFileAnnotation = EventFileAnnotation(frame, this)
         }
+        // initialize tagging GUI
+        eventFileAnnotation = EventFileAnnotation(frame, this)
     }
     private fun addFieldSelectionPane(mainPane: Container) {
         val fieldSelectionPane = JPanel(FlowLayout())
@@ -147,7 +149,7 @@ class CTagger {
         eventFileTagBtn.addActionListener {
             eventFileAnnotation.isVisible = true
         }
-        fieldSelectionPane.add(eventFileTagBtn)
+//        fieldSelectionPane.add(eventFileTagBtn)
         fieldSelectionPane.background = BLUE_MEDIUM
 
         mainPane.add(fieldSelectionPane, BorderLayout.NORTH)

@@ -26,6 +26,7 @@ class HedTagList(val tags: List<String>) : JList<String>() {
     init{
         model = listModel
         hedInput = null
+        tags.forEach{ listModel.addElement(it) }
     }
 
     // return size of the matchedTags list
