@@ -4,7 +4,7 @@
     <list default="true" id="72c37a2d-7732-475f-a211-f36aba459bfe" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CTagger.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/CTagger.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/EventFileAnnotation.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/EventFileAnnotation.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/HedTagInput.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/HedTagInput.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/HedTagList.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/HedTagList.kt" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
@@ -22,8 +22,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/CTagger.kt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="389">
-              <caret line="57" selection-start-line="57" selection-end-line="57" />
+            <state relative-caret-position="431">
+              <caret line="153" column="4" selection-start-line="153" selection-start-column="4" selection-end-line="153" selection-end-column="4" />
             </state>
           </provider>
         </entry>
@@ -43,8 +43,17 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/HedTagInput.kt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="969">
-              <caret line="68" column="34" lean-forward="true" selection-start-line="68" selection-start-column="34" selection-end-line="68" selection-end-column="34" />
+            <state relative-caret-position="341">
+              <caret line="52" column="144" selection-start-line="52" selection-start-column="144" selection-end-line="52" selection-end-column="144" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_211.jdk/Contents/Home/src.zip!/javax/swing/text/Caret.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="333">
+              <caret line="171" column="15" selection-start-line="171" selection-start-column="15" selection-end-line="171" selection-end-column="15" />
             </state>
           </provider>
         </entry>
@@ -70,8 +79,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/HedTagList.kt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-7">
-              <caret line="28" column="46" selection-start-line="28" selection-start-column="46" selection-end-line="28" selection-end-column="46" />
+            <state relative-caret-position="306">
+              <caret line="18" column="27" selection-start-line="18" selection-start-column="27" selection-end-line="18" selection-end-column="27" />
               <folding>
                 <element signature="e#0#128#0" expanded="true" />
               </folding>
@@ -115,6 +124,11 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -129,11 +143,11 @@
         <option value="$PROJECT_DIR$/src/EventCodeList/EventCodeList.kt" />
         <option value="$PROJECT_DIR$/src/EventCodeList.kt" />
         <option value="$PROJECT_DIR$/src/SetTextColor.java" />
-        <option value="$PROJECT_DIR$/src/HedTagInput.kt" />
         <option value="$PROJECT_DIR$/HEDLatest.xml" />
-        <option value="$PROJECT_DIR$/src/HedTagList.kt" />
         <option value="$PROJECT_DIR$/src/EventFileAnnotation.kt" />
+        <option value="$PROJECT_DIR$/src/HedTagList.kt" />
         <option value="$PROJECT_DIR$/src/CTagger.kt" />
+        <option value="$PROJECT_DIR$/src/HedTagInput.kt" />
       </list>
     </option>
   </component>
@@ -306,7 +320,7 @@
       <workItem from="1601333637821" duration="19833000" />
       <workItem from="1601529468454" duration="53000" />
       <workItem from="1601529550820" duration="32654000" />
-      <workItem from="1601877632320" duration="4765000" />
+      <workItem from="1601877632320" duration="16793000" />
     </task>
     <task id="LOCAL-00001" summary="first app skeleton">
       <created>1600559601087</created>
@@ -364,15 +378,21 @@
       <option name="project" value="LOCAL" />
       <updated>1601526384767</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="before trying to implement below pop-up window for tag search result">
+      <created>1602712967597</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1602712967597</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="103066000" />
+    <option name="totallyTimeSpent" value="115094000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1482" y="23" width="1957" height="1417" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12741515" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -383,7 +403,7 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.22943397" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.22943397" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -394,7 +414,7 @@
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Messages" order="11" weight="0.32830188" />
       <window_info anchor="bottom" id="Database Changes" order="12" />
-      <window_info anchor="bottom" id="Version Control" order="13" weight="0.32830188" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="13" visible="true" weight="0.21735848" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -419,7 +439,8 @@
     <MESSAGE value="add Done button with 1) Close frame and 2) output final string capacity" />
     <MESSAGE value="to json" />
     <MESSAGE value="Add event code list and implement single selection save and switch mechanism" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add event code list and implement single selection save and switch mechanism" />
+    <MESSAGE value="before trying to implement below pop-up window for tag search result" />
+    <option name="LAST_COMMIT_MESSAGE" value="before trying to implement below pop-up window for tag search result" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -575,13 +596,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/SetTextColor.java" />
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_211.jdk/Contents/Home/src.zip!/javax/swing/text/JTextComponent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="662">
-          <caret line="1855" column="16" selection-start-line="1855" selection-start-column="16" selection-end-line="1855" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_211.jdk/Contents/Home/src.zip!/javax/swing/JTextPane.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="283">
@@ -620,16 +634,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/HedTagList.kt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-7">
-          <caret line="28" column="46" selection-start-line="28" selection-start-column="46" selection-end-line="28" selection-end-column="46" />
-          <folding>
-            <element signature="e#0#128#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/EventFileAnnotation.kt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-7">
@@ -640,17 +644,58 @@
         </state>
       </provider>
     </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_211.jdk/Contents/Home/src.zip!/javax/swing/JComponent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="332">
+          <caret line="1476" column="16" selection-start-line="1476" selection-start-column="16" selection-end-line="1476" selection-end-column="16" />
+          <folding>
+            <element signature="e#56110#56111#0" expanded="true" />
+            <element signature="e#56146#56147#0" expanded="true" />
+            <element signature="e#59683#59684#0" expanded="true" />
+            <element signature="e#59713#59714#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_211.jdk/Contents/Home/src.zip!/javax/swing/text/JTextComponent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="254">
+          <caret line="1393" column="15" selection-start-line="1393" selection-start-column="15" selection-end-line="1393" selection-end-column="15" />
+          <folding>
+            <element signature="e#51303#51304#0" expanded="true" />
+            <element signature="e#51355#51356#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/CTagger.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="389">
-          <caret line="57" selection-start-line="57" selection-end-line="57" />
+        <state relative-caret-position="431">
+          <caret line="153" column="4" selection-start-line="153" selection-start-column="4" selection-end-line="153" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/HedTagList.kt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="18" column="27" selection-start-line="18" selection-start-column="27" selection-end-line="18" selection-end-column="27" />
+          <folding>
+            <element signature="e#0#128#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_211.jdk/Contents/Home/src.zip!/javax/swing/text/Caret.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="333">
+          <caret line="171" column="15" selection-start-line="171" selection-start-column="15" selection-end-line="171" selection-end-column="15" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/HedTagInput.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="969">
-          <caret line="68" column="34" lean-forward="true" selection-start-line="68" selection-start-column="34" selection-end-line="68" selection-end-column="34" />
+        <state relative-caret-position="341">
+          <caret line="52" column="144" selection-start-line="52" selection-start-column="144" selection-end-line="52" selection-end-column="144" />
         </state>
       </provider>
     </entry>
@@ -709,7 +754,6 @@
             <option name="proportions">
               <list>
                 <option value="0.2" />
-                <option value="0.6" />
               </list>
             </option>
           </splitter-proportions>

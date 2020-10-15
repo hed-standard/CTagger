@@ -16,12 +16,14 @@ fun main() {
 
 class CTagger {
     val frame = JFrame("CTAGGER")
-    private val tags: MutableList<String> = mutableListOf()
+    val tags: MutableList<String> = mutableListOf()
     val fieldMap = HashMap<String, HashMap<String,String>>()
     var fieldCB = JComboBox<String>()
     var eventCodeList: EventCodeList
-    var hedTagInput: HedTagInput
-    var hedTagList: HedTagList
+    lateinit var hedTagInput: HedTagInput
+    lateinit var hedTagList: HedTagList
+    lateinit var searchResultPanel: JScrollPane
+    val inputPane = JLayeredPane()
     var curField: String? = null
     lateinit var eventFile: Array<Array<String>>
     lateinit var eventFileAnnotation: EventFileAnnotation
@@ -32,10 +34,6 @@ class CTagger {
     init {
         getHedXmlModel()
         eventCodeList = EventCodeList(this)
-        hedTagInput = HedTagInput(this)
-        hedTagList = HedTagList(tags)
-        hedTagList.hedInput = hedTagInput
-        hedTagInput.tagList = hedTagList
     }
     constructor() {
         frame.setSize(1024, 800)
@@ -160,23 +158,34 @@ class CTagger {
         eventPanel.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
         eventPanel.preferredSize = Dimension(300,300)
 
-        val searchPanel = JScrollPane(hedTagList)
-        searchPanel.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-        searchPanel.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        searchPanel.preferredSize = Dimension(300,300)
+        inputPane.preferredSize = Dimension(300,300)
+        hedTagInput = HedTagInput(this)
+        hedTagInput.setBounds(0,0, 300,300)
+        val tagInputPane = JScrollPane(hedTagInput)
+        tagInputPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER // Force wrapping. Deduced from: http://java-sl.com/wrap.html
+        tagInputPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
+        tagInputPane.setBounds(0,0,300,300)
+        tagInputPane.location = Point(0,0)
 
-        hedTagInput.preferredSize = Dimension(300,300)
-        val inputPane = JScrollPane(hedTagInput)
-        inputPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER // Force wrapping. Deduced from: http://java-sl.com/wrap.html
-        inputPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
+        hedTagList = HedTagList(this, tags, hedTagInput)
+        searchResultPanel = JScrollPane(hedTagList)
+        searchResultPanel.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        searchResultPanel.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
+        searchResultPanel.setBounds(0, 0, 250,150)
+        searchResultPanel.location = Point(15,150)
+        hideSearchResultPane()
 
-        val tagPane = JPanel(BorderLayout())
-        tagPane.add(eventPanel, BorderLayout.LINE_START)
-        tagPane.add(inputPane, BorderLayout.CENTER)
-        tagPane.add(searchPanel, BorderLayout.LINE_END)
+        inputPane.add(tagInputPane)
+        print(inputPane.getLayer(tagInputPane))
+        inputPane.add(searchResultPanel)
+        inputPane.setLayer(searchResultPanel, 1)
+
+        val tagPane = JPanel(GridLayout(1,2))
+        tagPane.add(eventPanel)
+        tagPane.add(inputPane)
 
         eventPanel.background = BLUE_MEDIUM
-        inputPane.background = BLUE_MEDIUM
+//        tagInputPane.background = BLUE_MEDIUM
         tagPane.background = BLUE_MEDIUM
 
         mainPane.add(tagPane, BorderLayout.CENTER)
@@ -219,6 +228,22 @@ class CTagger {
         for (tagXmlModel: TagXmlModel in tagSets) {
             tags.add(path + tagXmlModel.name)
             populateTagSets(path + tagXmlModel.name + "/", tagXmlModel.tags)
+        }
+    }
+
+    fun hideSearchResultPane() {
+        SwingUtilities.invokeLater {
+            searchResultPanel.isVisible = false
+        }
+    }
+
+    fun showSearchResultPane(x: Int, y: Int) {
+        SwingUtilities.invokeLater {
+            searchResultPanel.location = Point(x, y)
+            searchResultPanel.revalidate()
+            searchResultPanel.repaint()
+            searchResultPanel.isVisible = true
+            inputPane.repaint()
         }
     }
 }
