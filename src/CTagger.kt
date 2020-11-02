@@ -9,13 +9,13 @@ import javax.swing.*
 import javax.xml.bind.JAXBContext
 
 
-
 fun main() {
     SwingUtilities.invokeLater { CTagger() }
 }
 
 class CTagger {
     val frame = JFrame("CTAGGER")
+    var hedVersion = ""
     val tags: MutableList<String> = mutableListOf()
     val fieldMap = HashMap<String, HashMap<String,String>>()
     var fieldCB = JComboBox<String>()
@@ -23,6 +23,7 @@ class CTagger {
     lateinit var hedTagInput: HedTagInput
     lateinit var hedTagList: HedTagList
     lateinit var searchResultPanel: JScrollPane
+    var schemaView: SchemaView
     val inputPane = JLayeredPane()
     var curField: String? = null
     lateinit var eventFile: Array<Array<String>>
@@ -40,6 +41,8 @@ class CTagger {
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         val dim = Toolkit.getDefaultToolkit().screenSize
         frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
+
+        schemaView = SchemaView(this)
 
         val mainPane = frame.contentPane
         mainPane.layout = BorderLayout()
@@ -78,6 +81,15 @@ class CTagger {
         menuItem = JMenuItem("Import tag file")
         submenu.add(menuItem)
         menu.add(submenu)
+
+        // View menu item
+        menu = JMenu("View")
+        menuBar.add(menu)
+        menuItem = JMenuItem("Show HED Schema")
+        menuItem.addActionListener {
+            schemaView.show()
+        }
+        menu.add(menuItem)
 
         frame.setJMenuBar(menuBar)
     }
@@ -171,7 +183,7 @@ class CTagger {
         searchResultPanel = JScrollPane(hedTagList)
         searchResultPanel.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
         searchResultPanel.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        searchResultPanel.setBounds(0, 0, 250,150)
+        searchResultPanel.setBounds(0, 0, 280,150)
         searchResultPanel.location = Point(15,150)
         hideSearchResultPane()
 
@@ -215,7 +227,7 @@ class CTagger {
         try {
             val context = JAXBContext.newInstance(HedXmlModel::class.java)
             hedXmlModel = context.createUnmarshaller().unmarshal(StringReader(xmlData)) as HedXmlModel
-            println(hedXmlModel.version)
+            hedVersion = hedXmlModel.version
         }
         catch(e: Exception) {
             throw RuntimeException("Unable to read XML data: " + e.message)
