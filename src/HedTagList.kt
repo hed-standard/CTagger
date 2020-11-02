@@ -1,9 +1,9 @@
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
+import java.awt.event.*
 import javax.swing.DefaultListModel
 import javax.swing.JList
+import javax.swing.JScrollPane
 
-class HedTagList(val tagger: CTagger, val tags: List<String>, val hedInput: HedTagInput) : JList<String>() {
+class HedTagList(private val tagger: CTagger, private val tags: List<String>, private val hedInput: HedTagInput) : JList<String>() {
     private val listModel = DefaultListModel<String>()
 
     init{
@@ -11,15 +11,20 @@ class HedTagList(val tagger: CTagger, val tags: List<String>, val hedInput: HedT
         tags.forEach{ listModel.addElement(it) }
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(evt: MouseEvent) {
-                val list = evt.source as JList<String>
                 if (evt.clickCount == 2) {
                     // Double-click detected
-//                            val index = list.locationToIndex(evt.point)
-                    val selectedTag = list.selectedValue
-                    hedInput.replaceWordAtCaretWithTag(selectedTag)
+                    tagSelected()
                 }
             }
         })
+        addKeyListener(ListKeySelectListener(this, tagger))
+        focusTraversalKeysEnabled = false
+//        inputMap.put(KeyStroke.getKeyStroke("DOWN"), "scrollDown")
+//        actionMap.put("scrollDown", scroll("d"))
+//        inputMap.put(KeyStroke.getKeyStroke("UP"), "scrollUp")
+//        actionMap.put("scrollUp", scroll("u"))
+//        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "tagSelected")
+//        actionMap.put("tagSelected", tagSelected())
     }
 
     // return size of the matchedTags list
@@ -35,9 +40,29 @@ class HedTagList(val tagger: CTagger, val tags: List<String>, val hedInput: HedT
         return matchedTags.size
     }
 
-    fun show(x: Int, y: Int) {
-        setLocation(x, y)
-        isVisible = true
+    fun tagSelected() {
+        val selectedTag = selectedValue
+        hedInput.replaceWordAtCaretWithTag(selectedTag)
+//        tagger.hideSearchResultPane()
     }
 
+    class ListKeySelectListener(private val tagList: HedTagList, private val tagger: CTagger) : KeyListener {
+        override fun keyTyped(e: KeyEvent?) {
+        }
+
+        override fun keyReleased(e: KeyEvent?) {
+        }
+        override fun keyPressed(e: KeyEvent?) {
+            if (e != null) {
+                when (e.keyCode) {
+//                    KeyEvent.VK_DOWN -> tagList.selectedIndex
+//                    KeyEvent.VK_UP -> tagList.selectedIndex
+                    KeyEvent.VK_ENTER -> tagList.tagSelected()
+                }
+//                print("here")
+                tagger.searchResultPanel.revalidate()
+                tagger.searchResultPanel.repaint()
+            }
+        }
+    }
 }

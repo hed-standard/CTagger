@@ -1,4 +1,6 @@
 import java.awt.Color
+import java.awt.event.KeyEvent
+import java.awt.event.KeyListener
 import javax.swing.JLayeredPane
 import javax.swing.JTextPane
 import javax.swing.SwingUtilities
@@ -8,9 +10,10 @@ import javax.swing.text.BadLocationException
 import javax.swing.text.SimpleAttributeSet
 import javax.swing.text.StyleConstants
 
-class HedTagInput(val tagger: CTagger) : JTextPane(), DocumentListener {
+class HedTagInput(val tagger: CTagger) : JTextPane(), DocumentListener, KeyListener {
     init {
         document.addDocumentListener(this)
+        addKeyListener(this)
     }
     /* Note on how indexing and caret position works */
     /*
@@ -52,6 +55,7 @@ class HedTagInput(val tagger: CTagger) : JTextPane(), DocumentListener {
             if (numResults > 0) {
                 tagger.showSearchResultPane(x+5, caret.magicCaretPosition.y+25) // put the search result at the left most but under current caret
                 blackHighlight(word)
+//                requestFocusInWindow()
             } else {
                 tagger.hideSearchResultPane()
                 redHighlight(word)
@@ -106,5 +110,20 @@ class HedTagInput(val tagger: CTagger) : JTextPane(), DocumentListener {
             System.err.println(e)
         }
         return null
+    }
+
+    override fun keyReleased(e: KeyEvent?) {
+    }
+
+    override fun keyTyped(e: KeyEvent?) {
+    }
+
+    override fun keyPressed(e: KeyEvent?) {
+        if (e != null && e.keyCode == KeyEvent.VK_DOWN && tagger.searchResultPanel.isVisible) {
+            tagger.hedTagList.requestFocusInWindow()
+            tagger.hedTagList.selectedIndex = 0
+            tagger.searchResultPanel.revalidate()
+            tagger.searchResultPanel.repaint()
+        }
     }
 }
