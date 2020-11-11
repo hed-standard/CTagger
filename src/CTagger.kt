@@ -37,7 +37,7 @@ class CTagger {
         eventCodeList = EventCodeList(this)
     }
     constructor() {
-        frame.setSize(1024, 800)
+        frame.setSize(1324, 800)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         val dim = Toolkit.getDefaultToolkit().screenSize
         frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
@@ -170,34 +170,30 @@ class CTagger {
         eventPanel.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
         eventPanel.preferredSize = Dimension(300,300)
 
-        inputPane.preferredSize = Dimension(300,300)
+        inputPane.preferredSize = Dimension(600,300)
         hedTagInput = HedTagInput(this)
-        hedTagInput.setBounds(0,0, 300,300)
+        hedTagInput.setBounds(0,0, 600,300)
         val tagInputPane = JScrollPane(hedTagInput)
         tagInputPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER // Force wrapping. Deduced from: http://java-sl.com/wrap.html
         tagInputPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        tagInputPane.setBounds(0,0,300,300)
+        tagInputPane.setBounds(0,0,600,300)
         tagInputPane.location = Point(0,0)
 
         hedTagList = HedTagList(this, tags, hedTagInput)
         searchResultPanel = JScrollPane(hedTagList)
         searchResultPanel.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
         searchResultPanel.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        searchResultPanel.setBounds(0, 0, 280,150)
+        searchResultPanel.setBounds(0, 0, 580,150)
         searchResultPanel.location = Point(15,150)
-        hideSearchResultPane()
+        searchResultPanel.isVisible = false
 
         inputPane.add(tagInputPane)
-        print(inputPane.getLayer(tagInputPane))
-        inputPane.add(searchResultPanel)
-        inputPane.setLayer(searchResultPanel, 1)
 
         val tagPane = JPanel(GridLayout(1,2))
         tagPane.add(eventPanel)
         tagPane.add(inputPane)
 
         eventPanel.background = BLUE_MEDIUM
-//        tagInputPane.background = BLUE_MEDIUM
         tagPane.background = BLUE_MEDIUM
 
         mainPane.add(tagPane, BorderLayout.CENTER)
@@ -246,6 +242,8 @@ class CTagger {
     fun hideSearchResultPane() {
         SwingUtilities.invokeLater {
             searchResultPanel.isVisible = false
+            inputPane.remove(searchResultPanel)
+            inputPane.repaint()
         }
     }
 
@@ -255,6 +253,8 @@ class CTagger {
             searchResultPanel.revalidate()
             searchResultPanel.repaint()
             searchResultPanel.isVisible = true
+            inputPane.add(searchResultPanel)
+            inputPane.setLayer(searchResultPanel, 1)
             inputPane.repaint()
         }
     }

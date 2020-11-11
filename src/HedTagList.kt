@@ -43,7 +43,7 @@ class HedTagList(private val tagger: CTagger, private val tags: List<String>, pr
     fun tagSelected() {
         val selectedTag = selectedValue
         hedInput.replaceWordAtCaretWithTag(selectedTag)
-//        tagger.hideSearchResultPane()
+        tagger.hideSearchResultPane()
     }
 
     class ListKeySelectListener(private val tagList: HedTagList, private val tagger: CTagger) : KeyListener {

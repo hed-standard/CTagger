@@ -1,7 +1,8 @@
 import java.awt.Color
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
-import javax.swing.JLayeredPane
+import java.awt.event.MouseEvent
+import java.awt.event.MouseListener
 import javax.swing.JTextPane
 import javax.swing.SwingUtilities
 import javax.swing.event.DocumentEvent
@@ -10,10 +11,11 @@ import javax.swing.text.BadLocationException
 import javax.swing.text.SimpleAttributeSet
 import javax.swing.text.StyleConstants
 
-class HedTagInput(val tagger: CTagger) : JTextPane(), DocumentListener, KeyListener {
+class HedTagInput(val tagger: CTagger) : JTextPane(), DocumentListener, KeyListener, MouseListener {
     init {
         document.addDocumentListener(this)
         addKeyListener(this)
+        addMouseListener(this)
     }
     /* Note on how indexing and caret position works */
     /*
@@ -25,7 +27,7 @@ class HedTagInput(val tagger: CTagger) : JTextPane(), DocumentListener, KeyListe
             val wordStartPos = findWordBeginning(caretPosition)
             val nodes = selectedTag.split('/') // short-form tag
             select(wordStartPos, caretPosition) // prepare for next statement
-            if (nodes.last() == "#") replaceSelection(nodes[nodes.size-2] + "/") else replaceSelection(nodes.last()) //TODO need to account for whether takeValues is enforced
+            if (nodes.last() == "#") replaceSelection(nodes[nodes.size-2] + "/") else replaceSelection(nodes.last() + ", ") //TODO need to account for whether takeValues is enforced
             grabFocus()
         } catch (e: BadLocationException) {
             System.err.println(e)
@@ -117,13 +119,30 @@ class HedTagInput(val tagger: CTagger) : JTextPane(), DocumentListener, KeyListe
 
     override fun keyTyped(e: KeyEvent?) {
     }
-
     override fun keyPressed(e: KeyEvent?) {
         if (e != null && e.keyCode == KeyEvent.VK_DOWN && tagger.searchResultPanel.isVisible) {
             tagger.hedTagList.requestFocusInWindow()
             tagger.hedTagList.selectedIndex = 0
             tagger.searchResultPanel.revalidate()
             tagger.searchResultPanel.repaint()
+        }
+    }
+
+    override fun mousePressed(e: MouseEvent) {
+    }
+
+    override fun mouseReleased(e: MouseEvent) {
+    }
+
+    override fun mouseEntered(e: MouseEvent?) {
+    }
+
+    override fun mouseExited(e: MouseEvent?) {
+    }
+
+    override fun mouseClicked(e: MouseEvent) {
+        if (e != null && tagger.searchResultPanel.isVisible) {
+            tagger.hideSearchResultPane()
         }
     }
 }
