@@ -12,47 +12,23 @@ import javax.swing.text.SimpleAttributeSet
 import javax.swing.text.StyleConstants
 import kotlin.text.Regex
 
-class HedTagInput(val tagger: CTagger) : JTextPane(), DocumentListener, KeyListener, MouseListener {
+class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, KeyListener, MouseListener {
+    private var isReplace = false
     init {
         document.addDocumentListener(this)
         addKeyListener(this)
         addMouseListener(this)
     }
-    /* Note on how indexing and caret position works */
-    /*
-        Think of text as a character array. Thus text.charAt(caretPosition) get the character to the right of the caret.
-        When insertUpdate and removeUpdate is entered, the caretPosition is still at last flashed. Thus it's not the final position when the update completes
-     */
-    fun replaceWordAtCaretWithTag(selectedTag: String) {
-        try {
-            val wordStartPos = findWordBeginning(caretPosition)
-            val nodes = selectedTag.split('/') // short-form tag
-            select(wordStartPos, caretPosition) // prepare for next statement
-            if (nodes.last() == "#") replaceSelection(nodes[nodes.size-2] + "/") else replaceSelection(nodes.last() + ", ") //TODO need to account for whether takeValues is enforced
-            grabFocus()
-        } catch (e: BadLocationException) {
-            System.err.println(e)
-        }
-    }
 
-    fun findWordBeginning(endPos: Int): Int {
-        var wordStartPos = endPos - 1
-        if (wordStartPos > text.length) wordStartPos = -1
-        while (wordStartPos > 0 && !getText(wordStartPos - 1, 1).matches(Regex(",|\\s|\\(|\\)|\\t|\\n|\\r"))) {
-            --wordStartPos
-        }
-        return wordStartPos
-    }
-//    private class HedTagInputListener(val tp: HedTagInput, val list: HedTagList) : DocumentListener {
     /**
      * Action handler when a character is inserted
-     * 1. Get word to which the new character is part of
+     * 1. Get word (HED tag) to which the new character is part of
      * 2. Search and process result
      *      2.1. If tag exist, show search result in the window below the word, black highlight (overwritting any active red highlight).
      *      2.2. If tag doesn't exist, hide result window (if on) and red highlight the word
      */
     override fun insertUpdate(e: DocumentEvent) {
-        val result = getWordAtCaret(true)
+        val result = getWordAtPos(caretPosition)
         if (result != null) {
             val numResults = tagger.hedTagList.search(text.substring(result.first, result.second))
             if (numResults > 0) {
@@ -75,10 +51,13 @@ class HedTagInput(val tagger: CTagger) : JTextPane(), DocumentListener, KeyListe
     }
 
     override fun removeUpdate(e: DocumentEvent) {
-        val result = getWordAtCaret(false)
-        if (result != null) {
-            val numResults = tagger.hedTagList.search(text.substring(result.first, result.second))
-            if (numResults == 0) redHighlight(result.first, result.second) else blackHighlight(result.first, result.second)
+        if (!isReplace) {
+            val pos = caretPosition - 2
+            val result = getWordAtPos(pos)
+            if (result != null) {
+                val numResults = tagger.hedTagList.search(text.substring(result.first, result.second))
+                if (numResults == 0) redHighlight(result.first, result.second) else blackHighlight(result.first, result.second)
+            }
         }
     }
 
@@ -106,10 +85,10 @@ class HedTagInput(val tagger: CTagger) : JTextPane(), DocumentListener, KeyListe
         }
     }
 
-    private fun getWordAtCaret(isInsert: Boolean): Pair<Int,Int>? {
+    private fun getWordAtPos(pos:Int): Pair<Int,Int>? {
         try {
-            // start with the last character (right before caret)
-            var startPos = if (isInsert) this.caretPosition else this.caretPosition - 2
+            // start with the last character
+            var startPos = pos
 
             // backtrack until an invalid character or end of text
             val regex = Regex("\\w|\\+|\\^|-|\\d|/")
@@ -134,6 +113,21 @@ class HedTagInput(val tagger: CTagger) : JTextPane(), DocumentListener, KeyListe
         return null
     }
 
+    fun replaceWordAtCaretWithTag(selectedTag: String) {
+        try {
+            val result = getWordAtPos(caretPosition-1)//findWordBeginning(caretPosition)
+            if (result != null) {
+                val nodes = selectedTag.split('/') // short-form tag
+                select(result.first, result.second) // prepare for next statement
+                isReplace = true // tell removeUpdate to ignore
+                if (nodes.last() == "#") replaceSelection(nodes[nodes.size - 2] + "/") else replaceSelection(nodes.last() + ", ") //TODO need to account for whether takeValues is enforced
+                isReplace = false // replace done. Reset
+                grabFocus()
+            }
+        } catch (e: BadLocationException) {
+            System.err.println(e)
+        }
+    }
     override fun keyReleased(e: KeyEvent?) {
     }
 
