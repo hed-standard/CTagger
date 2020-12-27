@@ -52,8 +52,9 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
     }
 
     override fun removeUpdate(e: DocumentEvent) {
-        if (!isReplace) {
-            val pos = caretPosition - 2
+        if (!isReplace && text.isNotEmpty()) {
+            var pos = caretPosition - e.length
+            if (pos >= text.length) pos = text.length-1
             val result = getWordAtPos(pos)
             if (result != null) {
                 val numResults = tagger.hedTagList.search(text.substring(result.first, result.second))
@@ -91,8 +92,8 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
 
     private fun getWordAtPos(pos:Int): Pair<Int,Int>? {
         try {
-            // start with the last character
-            var startPos = pos
+            // start with the last character. If beginning of doc, set to -1
+            var startPos = if (pos >= -1) pos else -1
 
             // backtrack until an invalid character or end of text
             val regex = Regex(validTagPattern)
