@@ -14,6 +14,7 @@ import kotlin.text.Regex
 
 class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, KeyListener, MouseListener {
     private var isReplace = false
+    private val validTagPattern = "\\w|\\+|\\^|-|\\d|/"
     init {
         document.addDocumentListener(this)
         addKeyListener(this)
@@ -30,7 +31,7 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
     override fun insertUpdate(e: DocumentEvent) {
         val result = getWordAtPos(caretPosition)
         if (result != null) {
-            val numResults = tagger.hedTagList.search(text.substring(result.first, result.second))
+            val numResults = checkValidity(text.substring(result.first, result.second))
             if (numResults > 0) {
                 try {
                     tagger.showSearchResultPane(x + 5, this.caret.magicCaretPosition.y + 25) // put the search result at the left most but under current caret
@@ -59,6 +60,9 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
                 if (numResults == 0) redHighlight(result.first, result.second) else blackHighlight(result.first, result.second)
             }
         }
+    }
+    fun checkValidity(tag:String): Int {
+        return tagger.hedTagList.search(tag)
     }
 
     // black highlight compatible input
@@ -91,7 +95,7 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
             var startPos = pos
 
             // backtrack until an invalid character or end of text
-            val regex = Regex("\\w|\\+|\\^|-|\\d|/")
+            val regex = Regex(validTagPattern)
 //            println(text)
             while (startPos >= 0 && regex.matches(text[startPos].toString())) {
                 startPos--
@@ -128,6 +132,30 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
             System.err.println(e)
         }
     }
+
+    fun findInvalidTags(): List<String> {
+        val invalidTags = mutableListOf<String>()
+        var i = 0
+        while (i < text.length) {
+            val loc = getWordAtPos(i)
+            if (loc != null) {
+                val tag = text.substring(loc.first, loc.second)
+                if (checkValidity(tag) == 0) {
+                    invalidTags.add(tag)
+                }
+                // advance to beginning of next word
+                val regex = Regex(validTagPattern)
+                i = loc.second
+                while (i < text.length && !regex.matches(text[i].toString())) {
+                    i++
+                }
+            }
+            else {
+                i++
+            }
+        }
+        return invalidTags
+    }
     override fun keyReleased(e: KeyEvent?) {
     }
 
@@ -160,6 +188,14 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
     override fun mouseClicked(e: MouseEvent) {
         if (e != null && tagger.searchResultPanel.isVisible) {
             tagger.hideSearchResultPane()
+        }
+    }
+
+    fun resume(s: String?) {
+        if (s != null) {
+            isReplace = true
+            text = s
+            isReplace = false
         }
     }
 }
