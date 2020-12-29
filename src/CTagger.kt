@@ -206,7 +206,6 @@ class CTagger {
         eventPane.layout = BoxLayout(eventPane, BoxLayout.PAGE_AXIS)
         val isValueCheckbox = JCheckBox("Check if value field")
         isValueCheckbox.addItemListener {
-
             if (it.stateChange == 1)
                 setValueField(fieldCB.selectedItem.toString())
             else
@@ -332,15 +331,22 @@ class CTagger {
         }
     }
     fun exportBIDSJson(fMap: HashMap<String, HashMap<String,String>>): String {
-        val finalMap = HashMap<String, Any>()
+        val bidsFieldMap = HashMap<String, Any>()
         val gson = Gson()
         fMap.forEach {
-            if (isValueField.containsKey(it.key) && isValueField[it.key]!! && it.value.containsKey("HED"))
-                finalMap[it.key] = hashMapOf(Pair("HED",it.value["HED"]!!))
-            else
-                finalMap[it.key] = hashMapOf(Pair("HED", it.value!!))
+            if (isValueField.containsKey(it.key) && isValueField[it.key]!! && it.value.containsKey("HED") && it.value["HED"]!!.isNotEmpty())
+                bidsFieldMap[it.key] = hashMapOf(Pair("HED",it.value["HED"]!!))
+            else {
+                val finalMap = HashMap<String,String>()
+                it.value.forEach {map ->
+                    if (map.value.isNotEmpty())
+                        finalMap[map.key] = map.value
+                }
+                if (finalMap.isNotEmpty())
+                    bidsFieldMap[it.key] = hashMapOf(Pair("HED", finalMap))
+            }
         }
-        return gson.toJson(finalMap).toString()
+        return gson.toJson(bidsFieldMap).toString()
     }
 }
 
