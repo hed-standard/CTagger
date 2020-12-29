@@ -1,8 +1,9 @@
 import com.google.gson.Gson
 import com.univocity.parsers.tsv.TsvParser
 import com.univocity.parsers.tsv.TsvParserSettings
+import tornadofx.launch
 import java.awt.*
-import java.awt.event.WindowEvent
+import java.awt.event.*
 import java.io.File
 import java.io.StringReader
 import javax.swing.*
@@ -30,11 +31,16 @@ class CTagger {
     lateinit var eventFileAnnotation: EventFileAnnotation
     var fieldAndUniqueCodeMap = HashMap<String, List<String>>()
     private val BLUE_MEDIUM = Color(168, 194, 255)
+    private val isValueField = HashMap<String, Boolean>()
+    private val oldFieldAndUniqueCodeMap = HashMap<String, List<String>>()
+    private var javaFxLaunched = false
+
 
 
     init {
         getHedXmlModel()
         eventCodeList = EventCodeList(this)
+        getEventInfo(File("/Users/dtyoung/test_events.tsv"))
     }
     constructor() {
         frame.setSize(1324, 800)
@@ -49,7 +55,7 @@ class CTagger {
 
         createMenuBar()
         addFieldSelectionPane(mainPane)
-        addTagPane(mainPane)
+        addCenterPane(mainPane)
         addDoneBtn(mainPane)
 
         frame.background = BLUE_MEDIUM
@@ -103,6 +109,8 @@ class CTagger {
             curField = null
             fieldAndUniqueCodeMap.clear()
             fieldMap.clear()
+            isValueField.clear()
+            oldFieldAndUniqueCodeMap.clear()
             fieldCB.removeAll()
         }
         val settings = TsvParserSettings()
@@ -123,15 +131,18 @@ class CTagger {
             // add unique codes to each field, ignoring BIDS default numerical fields
             if (!listOf("duration", "onset", "sample", "stim_file", "HED", "response_time").contains(field)) {
                 fieldAndUniqueCodeMap[field] = it.slice(1 until it.size).distinct()
+                isValueField[field] = false
             } else {
-                fieldAndUniqueCodeMap[field] = listOf("hed_string")
+                fieldAndUniqueCodeMap[field] = listOf("HED")
+                isValueField[field] = true
             }
             // initialize fieldMap
             fieldMap[field] = HashMap()
             fieldAndUniqueCodeMap[field]!!.forEach { fieldMap[field]!![it] = "" }
-
         }
         // initialize tagging GUI
+        eventCodeList.codeSet = fieldAndUniqueCodeMap[fieldCB.selectedItem!!]!! // add codes of current field
+        eventCodeList.selectedIndex = 0 // select first code in the list
         eventFileAnnotation = EventFileAnnotation(frame, this)
     }
     private fun addFieldSelectionPane(mainPane: Container) {
@@ -155,6 +166,32 @@ class CTagger {
             }
         }
         fieldSelectionPane.add(fieldCB)
+        val addFieldBtn = JButton("Create new field")
+        addFieldBtn.addActionListener {
+
+//            public static void myLaunch(Class<? extends Application> applicationClass) {
+//                if (!javaFxLaunched) { // First time
+//                    Platform.setImplicitExit(false);
+//                    new Thread(()->Application.launch(applicationClass)).start();
+//                    javaFxLaunched = true;
+//                } else { // Next times
+//                    Platform.runLater(()->{
+//                        try {
+//                            Application application = applicationClass.newInstance();
+//                            Stage primaryStage = new Stage();
+//                            application.start(primaryStage);
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                    });
+//                }
+//            }
+            val gson = Gson()
+            val finalJson = gson.toJson(fieldAndUniqueCodeMap).toString()
+            launch<FieldGenerator>("{\"newFieldName\": \"trial_type\", \"eventFields\": $finalJson}")
+        }
+        fieldSelectionPane.add(addFieldBtn)
+
         val eventFileTagBtn = JButton("Tag event file")
         eventFileTagBtn.addActionListener {
             eventFileAnnotation.isVisible = true
@@ -164,11 +201,25 @@ class CTagger {
 
         mainPane.add(fieldSelectionPane, BorderLayout.NORTH)
     }
-    private fun addTagPane(mainPane: Container) {
-        val eventPanel = JScrollPane(eventCodeList)
-        eventPanel.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-        eventPanel.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        eventPanel.preferredSize = Dimension(300,300)
+    private fun addCenterPane(mainPane: Container) {
+        val eventPane = JPanel()
+        eventPane.layout = BoxLayout(eventPane, BoxLayout.PAGE_AXIS)
+        val isValueCheckbox = JCheckBox("Check if value field")
+        isValueCheckbox.addItemListener {
+
+            if (it.stateChange == 1)
+                setValueField(fieldCB.selectedItem.toString())
+            else
+                unsetValueField(fieldCB.selectedItem.toString())
+        }
+        eventPane.add(isValueCheckbox)
+
+        val eventCodePane = JScrollPane(eventCodeList)
+        eventCodePane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        eventCodePane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
+        eventCodePane.preferredSize = Dimension(300,300)
+        eventCodePane.background = BLUE_MEDIUM
+        eventPane.add(eventCodePane)
 
         inputPane.preferredSize = Dimension(600,300)
         hedTagInput = HedTagInput(this)
@@ -190,10 +241,8 @@ class CTagger {
         inputPane.add(tagInputPane)
 
         val tagPane = JPanel(GridLayout(1,2))
-        tagPane.add(eventPanel)
+        tagPane.add(eventPane)
         tagPane.add(inputPane)
-
-        eventPanel.background = BLUE_MEDIUM
         tagPane.background = BLUE_MEDIUM
 
         mainPane.add(tagPane, BorderLayout.CENTER)
@@ -202,9 +251,7 @@ class CTagger {
     private fun addDoneBtn(mainPane: Container) {
         val doneBtn = JButton("Done")
         doneBtn.addActionListener {
-            val gson = Gson()
-            val finalJson = gson.toJson(fieldMap).toString()
-
+            val finalJson = exportBIDSJson(fieldMap)
             println(finalJson)
             JOptionPane.showMessageDialog(frame,
                     finalJson,
@@ -257,6 +304,43 @@ class CTagger {
             inputPane.setLayer(searchResultPanel, 1)
             inputPane.repaint()
         }
+    }
+
+    fun setValueField(field: String) {
+        isValueField[field] = true
+        if (field in fieldAndUniqueCodeMap) {
+            oldFieldAndUniqueCodeMap[field] = fieldAndUniqueCodeMap[field]!!
+            fieldAndUniqueCodeMap[field] = listOf("HED")
+            eventCodeList.codeSet = fieldAndUniqueCodeMap[field]!!
+        }
+        if (field in fieldMap) {
+            fieldMap[field]!!.clear()
+            fieldMap[field]!!["HED"] = ""
+        }
+    }
+    fun unsetValueField(field: String) {
+        if (field in isValueField && isValueField[field]!!) {
+            isValueField[field] = false
+            if (field in oldFieldAndUniqueCodeMap) {
+                fieldAndUniqueCodeMap[field] = oldFieldAndUniqueCodeMap[field]!!
+                eventCodeList.codeSet = fieldAndUniqueCodeMap[field]!!
+                if (field in fieldMap) {
+                    fieldMap[field]!!.clear()
+                    fieldAndUniqueCodeMap[field]!!.forEach{fieldMap[field]!![it] = ""}
+                }
+            }
+        }
+    }
+    fun exportBIDSJson(fMap: HashMap<String, HashMap<String,String>>): String {
+        val finalMap = HashMap<String, Any>()
+        val gson = Gson()
+        fMap.forEach {
+            if (isValueField.containsKey(it.key) && isValueField[it.key]!! && it.value.containsKey("HED"))
+                finalMap[it.key] = hashMapOf(Pair("HED",it.value["HED"]!!))
+            else
+                finalMap[it.key] = hashMapOf(Pair("HED", it.value!!))
+        }
+        return gson.toJson(finalMap).toString()
     }
 }
 
