@@ -1,10 +1,14 @@
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.univocity.parsers.tsv.TsvParser
 import com.univocity.parsers.tsv.TsvParserSettings
 import tornadofx.launch
 import java.awt.*
-import java.awt.event.*
+import java.awt.event.ItemEvent
+import java.awt.event.WindowEvent
 import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStreamWriter
 import java.io.StringReader
 import javax.swing.*
 import javax.xml.bind.JAXBContext
@@ -26,7 +30,6 @@ class CTagger {
     lateinit var searchResultPanel: JScrollPane
     var schemaView: SchemaView
     val inputPane = JLayeredPane()
-    var curField: String? = null
     lateinit var eventFile: Array<Array<String>>
     lateinit var eventFileAnnotation: EventFileAnnotation
     var fieldAndUniqueCodeMap = HashMap<String, List<String>>()
@@ -88,6 +91,12 @@ class CTagger {
         submenu.add(menuItem)
         menu.add(submenu)
 
+        menuItem = JMenuItem("Show BIDS format")
+        menuItem.addActionListener {
+            showBIDSWindow()
+        }
+        menu.add(menuItem)
+
         // View menu item
         menu = JMenu("View")
         menuBar.add(menu)
@@ -106,7 +115,7 @@ class CTagger {
         // reset if not empty
         if (fieldMap.isNotEmpty()) {
             JOptionPane.showMessageDialog(frame, "Clearing fieldMap")
-            curField = null
+//            curField = null
             fieldAndUniqueCodeMap.clear()
             fieldMap.clear()
             isValueField.clear()
@@ -148,21 +157,29 @@ class CTagger {
     private fun addFieldSelectionPane(mainPane: Container) {
         val fieldSelectionPane = JPanel(FlowLayout())
         fieldSelectionPane.add(JLabel("Tagging field: "))
-        fieldCB.addActionListener {
-            // save work of previous field
-            if (curField != null) {
-                val map = fieldMap[curField!!]
-                val key = eventCodeList.prevSelected
-                eventCodeList.prevSelected = null
-                if (map != null && key != null)
-                    map[key] = hedTagInput.text
-                hedTagInput.text = null
-            }
-            // set new field and new code list
-            curField = fieldCB.selectedItem.toString()
-            if (curField != null && fieldAndUniqueCodeMap.containsKey(curField!!)) {
-                // get unique event codes
-                eventCodeList.codeSet = fieldAndUniqueCodeMap[curField!!]!!
+        fieldCB.addItemListener {
+            if (it.stateChange == ItemEvent.DESELECTED) {
+                val curField = it.item as String
+                println(curField)
+                // save current work
+                if (curField != null) {
+                    val map = fieldMap[curField!!]
+                    val key = eventCodeList.selectedValue
+//                    eventCodeList.prevSelected = null
+                    println(fieldMap)
+                    println(key)
+                    println(map)
+                    if (map != null && key != null)
+                        map[key] = hedTagInput.getCleanHEDString()
+                    println(map)
+                    println(fieldMap)
+                    hedTagInput.text = null
+                }
+                // set new field and new code list
+                if (fieldCB.selectedItem != null && fieldAndUniqueCodeMap.containsKey(fieldCB.selectedItem.toString()!!)) {
+                    // get unique event codes
+                    eventCodeList.codeSet = fieldAndUniqueCodeMap[fieldCB.selectedItem!!]!!
+                }
             }
         }
         fieldSelectionPane.add(fieldCB)
@@ -250,7 +267,7 @@ class CTagger {
     private fun addDoneBtn(mainPane: Container) {
         val doneBtn = JButton("Done")
         doneBtn.addActionListener {
-            val finalJson = exportBIDSJson(fieldMap)
+            val finalJson = prettyPrintJson(exportBIDSJson(fieldMap))
             println(finalJson)
             JOptionPane.showMessageDialog(frame,
                     finalJson,
@@ -330,15 +347,22 @@ class CTagger {
             }
         }
     }
-    fun exportBIDSJson(fMap: HashMap<String, HashMap<String,String>>): String {
+
+    /**
+     * Export field map (fMap) to json accordingly to HED-BIDS specification
+     * https://bids-specification.readthedocs.io/en/stable/99-appendices/03-hed.html#appendix-iii-hierarchical-event-descriptors
+     */
+    fun exportBIDSJson(fMap: HashMap<String, HashMap<String,String>>): HashMap<String, Any> {
         val bidsFieldMap = HashMap<String, Any>()
-        val gson = Gson()
+//        val gson = Gson()
         fMap.forEach {
+            // value type, ignoring empty fields
             if (isValueField.containsKey(it.key) && isValueField[it.key]!! && it.value.containsKey("HED") && it.value["HED"]!!.isNotEmpty())
                 bidsFieldMap[it.key] = hashMapOf(Pair("HED",it.value["HED"]!!))
-            else {
+            else { // categories
                 val finalMap = HashMap<String,String>()
                 it.value.forEach {map ->
+                    // ignore empty codes
                     if (map.value.isNotEmpty())
                         finalMap[map.key] = map.value
                 }
@@ -346,7 +370,42 @@ class CTagger {
                     bidsFieldMap[it.key] = hashMapOf(Pair("HED", finalMap))
             }
         }
-        return gson.toJson(bidsFieldMap).toString()
+//        return gson.toJson(bidsFieldMap)
+        return bidsFieldMap
+    }
+    fun prettyPrintJson(fieldMap: HashMap<String, Any>): String {
+        val gson = GsonBuilder().setPrettyPrinting().create()
+        return gson.toJson(fieldMap)
+    }
+
+    fun showBIDSWindow() {
+        val json = prettyPrintJson(exportBIDSJson(fieldMap))
+        val textarea = JTextArea(10,20)
+        textarea.text = json
+        textarea.isEditable = false
+        val scroller = JScrollPane(textarea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
+        val options1 = arrayOf<Any>("Save to file", "Ok")
+        val result = JOptionPane.showOptionDialog(frame, scroller, "BIDS events.json HED string", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, options1, 1)
+        // if save to file selected
+        if (result == 0) {
+            val fileChooser = JFileChooser()
+            fileChooser.selectedFile = File("_events.json")
+            val retval = fileChooser.showSaveDialog(frame)
+            if (retval == JFileChooser.APPROVE_OPTION) {
+                var file = fileChooser.selectedFile ?: return
+                if (!file.name.toLowerCase().endsWith(".json")) {
+                    file = File(file.parentFile, file.name + ".json")
+                }
+                try {
+                    textarea.write(OutputStreamWriter(FileOutputStream(file),
+                            "utf-8"))
+//                    Desktop.getDesktop().open(file)
+                } catch (e: java.lang.Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+        print(result)
     }
 }
 
