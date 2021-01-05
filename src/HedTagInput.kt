@@ -62,8 +62,40 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
             }
         }
     }
+
+    /**
+     * This function is sensitive to the schema specification
+     */
     fun checkValidity(tag:String): Int {
-        return tagger.hedTagList.search(tag)
+        val splitted = tag.split('/')
+        if (splitted.size >= 2) {
+            if (!tagger.schema.containsKey(splitted[splitted.size-1])) {
+                if (tagger.schema.containsKey(splitted[splitted.size-2])) {
+                    // Could be one of these scenarios:
+                    // 1. Value of takesValue node --> prev node is requireChild
+                    // 2. Extension of extensionAllowed node
+                    // 3. Unfinished node typing (e.g. Event/Se) --> previous node is not end node
+                    // check based on the previous node
+                    val tagModel = tagger.schema[splitted[splitted.size-2]]!!
+                    if (tagModel.childRequired) {
+                        // validate takesValue input
+                        val valueNode = tagger.schema["${splitted[splitted.size-2]}/#"] // all childRequired nodes are followed by a takesValue node
+                        return 1
+                    }
+                    else if (tagModel.extensionAllowed) {
+                        return 1
+                    }
+                    else {
+                        // unfinished node typing --> show suggestion
+                        return tagger.hedTagList.search(tag)
+                    }
+                }
+            }
+            // last node exists in schema. Check if full path is valid
+            return if (tagger.schema.containsKey(tag)) 1 else 0
+        }
+        else
+            return tagger.hedTagList.search(tag)
     }
 
     // black highlight compatible input
@@ -198,5 +230,9 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
             text = s
             isReplace = false
         }
+    }
+
+    fun getCleanHEDString(): String {
+        return text.trim().trim(',')
     }
 }
