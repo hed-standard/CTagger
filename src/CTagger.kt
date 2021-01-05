@@ -22,6 +22,7 @@ class CTagger {
     val frame = JFrame("CTAGGER")
     var hedVersion = ""
     val tags: MutableList<String> = mutableListOf()
+    val schema: HashMap<String, TagModel> = HashMap()
     val fieldMap = HashMap<String, HashMap<String,String>>()
     var fieldCB = JComboBox<String>()
     var eventCodeList: EventCodeList
@@ -291,14 +292,24 @@ class CTagger {
         catch(e: Exception) {
             throw RuntimeException("Unable to read XML data: " + e.message)
         }
-        populateTagSets("", hedXmlModel.tags)
+        populateTagSets("", hedXmlModel.tags, false)
     }
 
     // Add tags recursively
-    private fun populateTagSets(path: String, tagSets: Set<TagXmlModel>) {
+    private fun populateTagSets(path: String, tagSets: Set<TagXmlModel>, parentExtensionAllowed: Boolean) {
         for (tagXmlModel: TagXmlModel in tagSets) {
-            tags.add(path + tagXmlModel.name)
-            populateTagSets(path + tagXmlModel.name + "/", tagXmlModel.tags)
+            val tagPath = path + tagXmlModel.name
+            val tagModel = TagModel(tagPath, tagXmlModel)
+            if (parentExtensionAllowed)
+                tagModel.extensionAllowed = parentExtensionAllowed
+            val nodes = tagPath.split('/')
+            for (i in nodes.size-1 downTo 0) {
+                val path = nodes.subList(i, nodes.size).joinToString("/")
+                if (path != "#")
+                    schema[path] = tagModel
+            }
+            tags.add(tagPath)
+            populateTagSets("$tagPath/", tagXmlModel.tags, tagXmlModel.isExtensionAllowed)
         }
     }
 
