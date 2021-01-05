@@ -298,10 +298,10 @@ class CTagger {
     // Add tags recursively
     private fun populateTagSets(path: String, tagSets: Set<TagXmlModel>, parentExtensionAllowed: Boolean) {
         for (tagXmlModel: TagXmlModel in tagSets) {
+            if (parentExtensionAllowed)
+                tagXmlModel.extensionAllowed = parentExtensionAllowed
             val tagPath = path + tagXmlModel.name
             val tagModel = TagModel(tagPath, tagXmlModel)
-            if (parentExtensionAllowed)
-                tagModel.extensionAllowed = parentExtensionAllowed
             val nodes = tagPath.split('/')
             for (i in nodes.size-1 downTo 0) {
                 val path = nodes.subList(i, nodes.size).joinToString("/")
