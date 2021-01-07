@@ -305,7 +305,7 @@ class CTagger {
     private fun populateTagSets(path: String, tagSets: Set<TagXmlModel>, parentExtensionAllowed: Boolean) {
         for (tagXmlModel: TagXmlModel in tagSets) {
             if (parentExtensionAllowed)
-                tagXmlModel.extensionAllowed = parentExtensionAllowed
+                tagXmlModel.isExtensionAllowed = parentExtensionAllowed
             val tagPath = path + tagXmlModel.name
             val tagModel = TagModel(tagPath, tagXmlModel)
             val nodes = tagPath.split('/')
