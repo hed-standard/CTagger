@@ -1,5 +1,6 @@
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import com.univocity.parsers.tsv.TsvParser
 import com.univocity.parsers.tsv.TsvParserSettings
 import tornadofx.launch
@@ -10,6 +11,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.io.StringReader
+import java.lang.reflect.Type
 import javax.swing.*
 import javax.xml.bind.JAXBContext
 
@@ -88,6 +90,17 @@ class CTagger {
             if (fileChosen == JFileChooser.APPROVE_OPTION) {
                 val file = fc.selectedFile
                 getEventInfo(file)
+            }
+        }
+        submenu.add(menuItem)
+        menuItem = JMenuItem("Import BIDS events.json file")
+        menuItem.addActionListener {
+            val fc = JFileChooser()
+            val fileChosen = fc.showOpenDialog(frame)
+            if (fileChosen == JFileChooser.APPROVE_OPTION) {
+                val file = fc.selectedFile
+                val json = file.readText()
+                deserializeBIDSJson(json)
             }
         }
         submenu.add(menuItem)
@@ -423,6 +436,60 @@ class CTagger {
             }
         }
         print(result)
+    }
+
+    class BIDSObject {
+        var LongName:String = ""
+        var Description:String = ""
+        var Levels:HashMap<String,String> = HashMap()
+        var Units:String = ""
+        lateinit var HED:Any
+    }
+    fun deserializeBIDSJson(json: String) {
+        val type: Type = object : TypeToken<HashMap<String?, BIDSObject>?>() {}.type
+        val gson = Gson()
+        val result: HashMap<String, BIDSObject> = gson.fromJson(json,type)
+        println(result)
+        // reset if not empty
+        if (fieldMap.isNotEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Clearing fieldMap")
+//            curField = null
+            fieldAndUniqueCodeMap.clear()
+            fieldMap.clear()
+            isValueField.clear()
+            oldFieldAndUniqueCodeMap.clear()
+            fieldCB.removeAllItems()
+        }
+        result.forEach {
+            // assuming that first row contains field names as BIDS TSV
+            val field = it.key.toLowerCase()
+            // add fields to combo box
+            fieldCB.addItem(field)
+            // add unique codes to each field, ignoring BIDS default numerical fields
+            if (listOf("duration", "onset", "sample", "stim_file", "hed", "response_time").contains(field)) {
+                fieldAndUniqueCodeMap[field] = listOf("HED")
+                isValueField[field] = true
+            } else {
+                if (it.value.Levels.isNotEmpty()) {
+                    fieldAndUniqueCodeMap[field] = it.value.Levels.keys.toList()
+                    isValueField[field] = false
+                }
+                else {
+                    fieldAndUniqueCodeMap[field] = listOf("HED")
+                    isValueField[field] = true
+                }
+            }
+            // initialize fieldMap
+            fieldMap[field] = HashMap()
+            fieldAndUniqueCodeMap[field]!!.forEach { fieldMap[field]!![it] = "" }
+        }
+        // initialize tagging GUI
+        eventCodeList.codeSet = fieldAndUniqueCodeMap[fieldCB.selectedItem!!]!! // add codes of current field
+        eventCodeList.selectedIndex = 0 // select first code in the list
+        eventFileAnnotation = EventFileAnnotation(frame, this)
+        fieldCB.repaint()
+        frame.repaint()
+
     }
 }
 
