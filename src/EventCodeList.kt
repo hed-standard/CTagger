@@ -48,10 +48,12 @@ class EventCodeList(val tagger: CTagger) : JList<String>() {
                     }
                     else {
                         // save current tags
-                        val codeMap = tagger.fieldMap[tagger.curField]
+                        val curField = tagger.fieldCB.selectedItem.toString()
+                        val codeMap = tagger.fieldMap[curField]
                         if (codeMap != null && prevSelected != null) {
-                            codeMap[prevSelected] = tagger.hedTagInput.text
+                            codeMap[prevSelected] = tagger.hedTagInput.getCleanHEDString()
                         }
+
                         eList.prevSelected = selected
 
                         // set hedTagInput to new text
