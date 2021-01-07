@@ -2,6 +2,7 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.DefaultListModel
 import javax.swing.JList
+import javax.swing.JOptionPane
 import javax.swing.event.ListSelectionEvent
 import javax.swing.event.ListSelectionListener
 
@@ -32,19 +33,34 @@ class EventCodeList(val tagger: CTagger) : JList<String>() {
                 if (!eList.valueIsAdjusting) {
                     val tagger = eList.tagger
                     val selected = eList.selectedValue
-                    println("code $selected selected")
                     var prevSelected = eList.prevSelected
+                    println("code $selected selected")
                     println(tagger.fieldMap)
-                    val codeMap = tagger.fieldMap[tagger.curField]
 
-                    // save current tags
-                    if (codeMap != null && prevSelected != null) // TODO
-                        codeMap[prevSelected] = tagger.hedTagInput.text
-                    eList.prevSelected = selected
+                    // Check for invalid tag. Only proceed if no invalid tags found
+                    val invalidTags = tagger.hedTagInput.findInvalidTags()
+                    if (invalidTags.isNotEmpty()) {
+                        JOptionPane.showMessageDialog(tagger.frame,
+                                "Please fix invalid tags (in red)",
+                                "Invalid tags found",
+                                JOptionPane.ERROR_MESSAGE);
+                        eList.setSelectedValue(prevSelected, true)
+                    }
+                    else {
+                        // save current tags
+                        val codeMap = tagger.fieldMap[tagger.curField]
+                        if (codeMap != null && prevSelected != null) {
+                            codeMap[prevSelected] = tagger.hedTagInput.text
+                        }
+                        eList.prevSelected = selected
 
-                    // set hedTagInput to new text
-                    if (codeMap != null && codeMap.containsKey(selected))
-                        tagger.hedTagInput.text = codeMap[selected]
+                        // set hedTagInput to new text
+                        if (codeMap != null && codeMap.containsKey(selected))
+                            tagger.hedTagInput.resume(codeMap[selected])
+
+                        // hide search result pane
+                        tagger.hideSearchResultPane()
+                    }
                 }
             }
         }
