@@ -21,8 +21,11 @@ fun main() {
 class CTagger {
     val frame = JFrame("CTAGGER")
     var hedVersion = ""
+    lateinit var unitClasses: Set<UnitClassXmlModel>
+    lateinit var unitModifiers: ArrayList<UnitModifierXmlModel>
     val tags: MutableList<String> = mutableListOf()
     val schema: HashMap<String, TagModel> = HashMap()
+    lateinit var hedValidator: HedValidator
     val fieldMap = HashMap<String, HashMap<String,String>>()
     var fieldCB = JComboBox<String>()
     var eventCodeList: EventCodeList
@@ -292,7 +295,10 @@ class CTagger {
         catch(e: Exception) {
             throw RuntimeException("Unable to read XML data: " + e.message)
         }
+        unitClasses = hedXmlModel.unitClasses.unitClasses
+        unitModifiers = hedXmlModel.unitModifiers.unitModifiers
         populateTagSets("", hedXmlModel.tags, false)
+        hedValidator = HedValidator(schema, this)
     }
 
     // Add tags recursively

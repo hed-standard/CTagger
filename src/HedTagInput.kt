@@ -14,7 +14,7 @@ import kotlin.text.Regex
 
 class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, KeyListener, MouseListener {
     private var isReplace = false
-    private val validTagPattern = "\\w|\\+|\\^|-|\\d|/"
+    private val validTagPattern = "\\w|\\+|\\^|-|\\s|\\d|/"
     init {
         document.addDocumentListener(this)
         addKeyListener(this)
@@ -31,8 +31,9 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
     override fun insertUpdate(e: DocumentEvent) {
         val result = getWordAtPos(caretPosition)
         if (result != null) {
-            val numResults = checkValidity(text.substring(result.first, result.second))
-            if (numResults > 0) {
+            println(result)
+            val isValid = tagger.hedValidator.validateEntry(text.substring(result.first, result.second))
+            if (isValid) {
                 try {
                     tagger.showSearchResultPane(x + 5, this.caret.magicCaretPosition.y + 25) // put the search result at the left most but under current caret
                 }
@@ -57,45 +58,11 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
             if (pos >= text.length) pos = text.length-1
             val result = getWordAtPos(pos)
             if (result != null) {
-                val numResults = tagger.hedTagList.search(text.substring(result.first, result.second))
-                if (numResults == 0) redHighlight(result.first, result.second) else blackHighlight(result.first, result.second)
+                println(result)
+                val isValid = tagger.hedValidator.validateEntry(text.substring(result.first, result.second))
+                if (!isValid) redHighlight(result.first, result.second) else blackHighlight(result.first, result.second)
             }
         }
-    }
-
-    /**
-     * This function is sensitive to the schema specification
-     */
-    fun checkValidity(tag:String): Int {
-        val splitted = tag.split('/')
-        if (splitted.size >= 2) {
-            if (!tagger.schema.containsKey(splitted[splitted.size-1])) {
-                if (tagger.schema.containsKey(splitted[splitted.size-2])) {
-                    // Could be one of these scenarios:
-                    // 1. Value of takesValue node --> prev node is requireChild
-                    // 2. Extension of extensionAllowed node
-                    // 3. Unfinished node typing (e.g. Event/Se) --> previous node is not end node
-                    // check based on the previous node
-                    val tagModel = tagger.schema[splitted[splitted.size-2]]!!
-                    if (tagModel.childRequired) {
-                        // validate takesValue input
-                        val valueNode = tagger.schema["${splitted[splitted.size-2]}/#"] // all childRequired nodes are followed by a takesValue node
-                        return 1
-                    }
-                    else if (tagModel.extensionAllowed) {
-                        return 1
-                    }
-                    else {
-                        // unfinished node typing --> show suggestion
-                        return tagger.hedTagList.search(tag)
-                    }
-                }
-            }
-            // last node exists in schema. Check if full path is valid
-            return if (tagger.schema.containsKey(tag)) 1 else 0
-        }
-        else
-            return tagger.hedTagList.search(tag)
     }
 
     // black highlight compatible input
@@ -173,7 +140,7 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
             val loc = getWordAtPos(i)
             if (loc != null) {
                 val tag = text.substring(loc.first, loc.second)
-                if (checkValidity(tag) == 0) {
+                if (tagger.hedValidator.validateEntry(tag)) {
                     invalidTags.add(tag)
                 }
                 // advance to beginning of next word

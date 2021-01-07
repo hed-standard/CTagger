@@ -3,7 +3,7 @@ import javax.swing.DefaultListModel
 import javax.swing.JList
 import javax.swing.JScrollPane
 
-class HedTagList(private val tagger: CTagger, private val tags: List<String>, private val hedInput: HedTagInput) : JList<String>() {
+class HedTagList(private val tagger: CTagger, private val tags: List<String>, private val hedInput: HedTagInput) : JList<String>(), FocusListener {
     private val listModel = DefaultListModel<String>()
 
     init{
@@ -17,6 +17,7 @@ class HedTagList(private val tagger: CTagger, private val tags: List<String>, pr
                 }
             }
         })
+        addFocusListener(this)
         addKeyListener(ListKeySelectListener(this, tagger))
         focusTraversalKeysEnabled = false
 //        inputMap.put(KeyStroke.getKeyStroke("DOWN"), "scrollDown")
@@ -28,16 +29,9 @@ class HedTagList(private val tagger: CTagger, private val tags: List<String>, pr
     }
 
     // return size of the matchedTags list
-    fun search(target: String) : Int{
-        val matchedTags = tags.filter {
-            // parse takeValues node if applicable
-            val splitted = target.split('/')
-            it.contains(target, true) || (splitted.size >= 2 && it.contains(splitted[splitted.size-2] + "/#", true))
-        } // beautiful syntax comparing to Java!
-
+    fun addTagsToList(tags: List<String>) {
         listModel.clear()
-        matchedTags.forEach { listModel.addElement(it) }
-        return matchedTags.size
+        tags.forEach { listModel.addElement(it) }
     }
 
     fun tagSelected() {
@@ -46,6 +40,13 @@ class HedTagList(private val tagger: CTagger, private val tags: List<String>, pr
         tagger.hideSearchResultPane()
     }
 
+    override fun focusGained(e: FocusEvent?) {
+        return
+    }
+
+    override fun focusLost(e: FocusEvent?) {
+        tagger.hideSearchResultPane()
+    }
     class ListKeySelectListener(private val tagList: HedTagList, private val tagger: CTagger) : KeyListener {
         override fun keyTyped(e: KeyEvent?) {
         }
