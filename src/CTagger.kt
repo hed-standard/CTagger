@@ -170,6 +170,7 @@ class CTagger {
         eventCodeList.codeSet = fieldAndUniqueCodeMap[fieldCB.selectedItem!!]!! // add codes of current field
         eventCodeList.selectedIndex = 0 // select first code in the list
         eventFileAnnotation = EventFileAnnotation(frame, this)
+        fieldCB.repaint()
     }
     private fun addFieldSelectionPane(mainPane: Container) {
         val fieldSelectionPane = JPanel(FlowLayout())
@@ -400,7 +401,6 @@ class CTagger {
                     bidsFieldMap[it.key] = hashMapOf(Pair("HED", finalMap))
             }
         }
-//        return gson.toJson(bidsFieldMap)
         return bidsFieldMap
     }
     fun prettyPrintJson(fieldMap: HashMap<String, Any>): String {
@@ -435,25 +435,20 @@ class CTagger {
                 }
             }
         }
-        print(result)
     }
 
-    class BIDSObject {
-        var LongName:String = ""
-        var Description:String = ""
-        var Levels:HashMap<String,String> = HashMap()
-        var Units:String = ""
-        lateinit var HED:Any
-    }
-    fun deserializeBIDSJson(json: String) {
-        val type: Type = object : TypeToken<HashMap<String?, BIDSObject>?>() {}.type
+    /**
+     * Action listener for import events.json menu item
+     * Importing events.json and update GUI
+     */
+    private fun deserializeBIDSJson(json: String) {
+        val type: Type = object : TypeToken<HashMap<String?, BIDSEventObject>?>() {}.type
         val gson = Gson()
-        val result: HashMap<String, BIDSObject> = gson.fromJson(json,type)
+        val result: HashMap<String, BIDSEventObject> = gson.fromJson(json,type)
         println(result)
         // reset if not empty
         if (fieldMap.isNotEmpty()) {
             JOptionPane.showMessageDialog(frame, "Clearing fieldMap")
-//            curField = null
             fieldAndUniqueCodeMap.clear()
             fieldMap.clear()
             isValueField.clear()
@@ -483,13 +478,22 @@ class CTagger {
             fieldMap[field] = HashMap()
             fieldAndUniqueCodeMap[field]!!.forEach { fieldMap[field]!![it] = "" }
         }
-        // initialize tagging GUI
+        // initialize/update tagging GUI
         eventCodeList.codeSet = fieldAndUniqueCodeMap[fieldCB.selectedItem!!]!! // add codes of current field
         eventCodeList.selectedIndex = 0 // select first code in the list
         eventFileAnnotation = EventFileAnnotation(frame, this)
         fieldCB.repaint()
-        frame.repaint()
+    }
 
+    /**
+     * For deserialization of events.json
+     */
+    class BIDSEventObject {
+        var LongName:String = ""
+        var Description:String = ""
+        var Levels:HashMap<String,String> = HashMap()
+        var Units:String = ""
+        var HED:Any = ""
     }
 }
 
