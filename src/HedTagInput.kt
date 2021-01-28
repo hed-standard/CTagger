@@ -31,7 +31,7 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
     override fun insertUpdate(e: DocumentEvent) {
         val result = getWordAtPos(caretPosition)
         if (result != null) {
-            println(result)
+
             val isValid = tagger.hedValidator.validateEntry(text.substring(result.first, result.second))
             if (isValid) {
                 try {
@@ -53,16 +53,16 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
     }
 
     override fun removeUpdate(e: DocumentEvent) {
-        if (!isReplace && text.isNotEmpty()) {
-            var pos = caretPosition - e.length
-            if (pos >= text.length) pos = text.length-1
-            val result = getWordAtPos(pos)
-            if (result != null) {
-                println(result)
-                val isValid = tagger.hedValidator.validateEntry(text.substring(result.first, result.second))
-                if (!isValid) redHighlight(result.first, result.second) else blackHighlight(result.first, result.second)
-            }
-        }
+//        if (!isReplace && text.isNotEmpty()) {
+//            var pos = caretPosition - e.length
+//            if (pos >= text.length) pos = text.length-1
+//            val result = getWordAtPos(pos)
+//            if (result != null) {
+//                tagger.hideSearchResultPane()
+////                val isValid = tagger.hedValidator.validateEntry(text.substring(result.first, result.second))
+////                if (!isValid) redHighlight(result.first, result.second) else blackHighlight(result.first, result.second)
+//            }
+//        }
     }
 
     // black highlight compatible input
@@ -93,7 +93,7 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
         try {
             // start with the last character. If beginning of doc, set to -1
             var startPos = if (pos >= -1) pos else -1
-
+            startPos-- // consider the character right before the pos (due to the way caret indexing works)
             // backtrack until an invalid character or end of text
             val regex = Regex(validTagPattern)
 //            println(text)
@@ -124,7 +124,7 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
                 val nodes = selectedTag.split('/') // short-form tag
                 select(result.first, result.second) // prepare for next statement
                 isReplace = true // tell removeUpdate to ignore
-                if (nodes.last() == "#") replaceSelection(nodes[nodes.size - 2] + "/") else replaceSelection(nodes.last() + ", ") //TODO need to account for whether takeValues is enforced
+                if (nodes.last() == "#") replaceSelection(" " + nodes[nodes.size - 2] + "/") else replaceSelection(" " + nodes.last() + ", ") //TODO need to account for whether takeValues is enforced
                 isReplace = false // replace done. Reset
                 grabFocus()
             }
