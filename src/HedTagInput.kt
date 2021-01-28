@@ -168,7 +168,7 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
             tagger.searchResultPanel.revalidate()
             tagger.searchResultPanel.repaint()
         }
-        else if (e != null && e.keyCode == KeyEvent.VK_ENTER && tagger.searchResultPanel.isVisible) {
+        else if (e != null && (e.keyCode == KeyEvent.VK_ENTER || e.keyCode == KeyEvent.VK_ESCAPE) && tagger.searchResultPanel.isVisible) {
             tagger.hideSearchResultPane()
         }
     }
