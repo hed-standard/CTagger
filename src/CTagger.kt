@@ -129,7 +129,7 @@ class CTagger {
 
         menuItem = JMenuItem("Show BIDS format")
         menuItem.addActionListener {
-            showBIDSWindow()
+            showJsonWindow(isBIDS = true)
         }
         menu.add(menuItem)
 
@@ -262,7 +262,7 @@ class CTagger {
     private fun addDoneBtn(mainPane: Container) {
         val doneBtn = JButton("Done")
         doneBtn.addActionListener {
-            showBIDSWindow()
+            showJsonWindow(isBIDS = false)
 //            val finalJson = prettyPrintJson(exportBIDSJson(fieldMap))
 //            println(finalJson)
 //            JOptionPane.showMessageDialog(frame,
@@ -361,37 +361,42 @@ class CTagger {
      * Export field map (fMap) to json accordingly to HED-BIDS specification
      * https://bids-specification.readthedocs.io/en/stable/99-appendices/03-hed.html#appendix-iii-hierarchical-event-descriptors
      */
-    fun exportBIDSJson(fMap: HashMap<String, HashMap<String,String>>): HashMap<String, Any> {
-        val bidsFieldMap = HashMap<String, Any>()
-//        val gson = Gson()
+    fun exportToJson(fMap: HashMap<String, HashMap<String,String>>, isBIDS: Boolean = false): HashMap<String, Any> {
+        val jsonFieldMap = HashMap<String, Any>()
         fMap.forEach {
             // value type, ignoring empty fields
             if (isValueField.containsKey(it.key) && isValueField[it.key]!! && it.value.containsKey("HED") && it.value["HED"]!!.isNotEmpty())
-                bidsFieldMap[it.key] = hashMapOf(Pair("HED",it.value["HED"]!!))
+                if (isBIDS)
+                    jsonFieldMap[it.key] = hashMapOf(Pair("HED", it.value["HED"]!!))
+                else
+                jsonFieldMap[it.key] = it.value["HED"]!!
             else { // categories
-                val finalMap = HashMap<String,String>()
-                it.value.forEach {map ->
+                val finalMap = HashMap<String, String>()
+                it.value.forEach { map ->
                     // ignore empty codes
                     if (map.value.isNotEmpty()) {
                         // some clean-up
                         var finalString = map.value
-                        finalString = finalString.replace("\n","")
+                        finalString = finalString.replace("\n", "")
                         finalMap[map.key] = finalString
                     }
                 }
                 if (finalMap.isNotEmpty())
-                    bidsFieldMap[it.key] = hashMapOf(Pair("HED", finalMap))
+                    if (isBIDS)
+                        jsonFieldMap[it.key] = hashMapOf(Pair("HED", finalMap))
+                    else
+                        jsonFieldMap[it.key] = finalMap
             }
         }
-        return bidsFieldMap
+        return jsonFieldMap
     }
     fun prettyPrintJson(fieldMap: HashMap<String, Any>): String {
         val gson = GsonBuilder().setPrettyPrinting().create()
         return gson.toJson(fieldMap)
     }
 
-    private fun showBIDSWindow() {
-        val json = prettyPrintJson(exportBIDSJson(fieldMap))
+    private fun showJsonWindow(isBIDS: Boolean) {
+        val json = prettyPrintJson(exportToJson(fieldMap, isBIDS = isBIDS))
         val textarea = JTextArea(10,20)
         textarea.text = json
         textarea.isEditable = false
@@ -401,7 +406,10 @@ class CTagger {
         // if save to file selected
         if (result == 0) {
             val fileChooser = JFileChooser()
-            fileChooser.selectedFile = File("_events.json")
+            if (isBIDS)
+                fileChooser.selectedFile = File("_events.json")
+            else
+                fileChooser.selectedFile = File(".json")
             val retval = fileChooser.showSaveDialog(frame)
             if (retval == JFileChooser.APPROVE_OPTION) {
                 var file = fileChooser.selectedFile ?: return
