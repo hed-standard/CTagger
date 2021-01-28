@@ -14,6 +14,7 @@ import java.io.StringReader
 import java.lang.reflect.Type
 import javax.swing.*
 import javax.xml.bind.JAXBContext
+import kotlin.concurrent.timer
 
 
 fun main() {
@@ -36,23 +37,24 @@ class CTagger {
     lateinit var searchResultPanel: JScrollPane
     var schemaView: SchemaView
     val inputPane = JLayeredPane()
-    lateinit var eventFile: Array<Array<String>>
+//    lateinit var eventFile: Array<Array<String>>
     lateinit var eventFileAnnotation: EventFileAnnotation
     var fieldAndUniqueCodeMap = HashMap<String, List<String>>()
     private val BLUE_MEDIUM = Color(168, 194, 255)
     private val isValueField = HashMap<String, Boolean>()
     private val oldFieldAndUniqueCodeMap = HashMap<String, List<String>>()
-    private var javaFxLaunched = false
+//    private var javaFxLaunched = false
 
 
 
     init {
         getHedXmlModel()
         eventCodeList = EventCodeList(this)
-        getEventInfo(File("/Users/dtyoung/test_events.tsv"))
+//        importBIDSEventTSV(File("/Users/dtyoung/test_events.tsv"))
+        importBIDSEventJson(File(TestUtilities.EventJsonFileName))
     }
     constructor() {
-        frame.setSize(1324, 800)
+        frame.setSize(800, 800)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         val dim = Toolkit.getDefaultToolkit().screenSize
         frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
@@ -72,6 +74,23 @@ class CTagger {
         frame.pack()
         frame.isVisible = true
 
+        // start saving thread
+        timer(name = "Save tags", period = 3000) {
+            println("Saving tags")
+            // save current tags
+            try {
+                val curField = fieldCB.selectedItem.toString()
+                if (curField != null && fieldMap.containsKey(curField)) {
+                    val codeMap = fieldMap[curField]
+                    val selected = eventCodeList.selectedValue
+                    if (selected != null && codeMap!!.containsKey(selected))
+                        codeMap!![selected] = hedTagInput.getCleanHEDString()
+                }
+            }
+            catch (e: Exception) {
+                // Simply ignore and not save
+            }
+        }
     }
 
     private fun createMenuBar() {
@@ -89,7 +108,7 @@ class CTagger {
             val fileChosen = fc.showOpenDialog(frame)
             if (fileChosen == JFileChooser.APPROVE_OPTION) {
                 val file = fc.selectedFile
-                getEventInfo(file)
+                importBIDSEventTSV(file)
             }
         }
         submenu.add(menuItem)
@@ -99,8 +118,7 @@ class CTagger {
             val fileChosen = fc.showOpenDialog(frame)
             if (fileChosen == JFileChooser.APPROVE_OPTION) {
                 val file = fc.selectedFile
-                val json = file.readText()
-                deserializeBIDSJson(json)
+                importBIDSEventJson(file)
             }
         }
         submenu.add(menuItem)
@@ -126,52 +144,6 @@ class CTagger {
         frame.setJMenuBar(menuBar)
     }
 
-    // Retrieve event info from .tsv file
-    // and populate GUI
-    private fun getEventInfo(file: File) {
-        // reset if not empty
-        if (fieldMap.isNotEmpty()) {
-            JOptionPane.showMessageDialog(frame, "Clearing fieldMap")
-//            curField = null
-            fieldAndUniqueCodeMap.clear()
-            fieldMap.clear()
-            isValueField.clear()
-            oldFieldAndUniqueCodeMap.clear()
-            fieldCB.removeAll()
-        }
-        val settings = TsvParserSettings()
-        val parser = TsvParser(settings)
-        val allRows = parser.parseAll(file)
-        eventFile = allRows.toTypedArray()
-        val eventFileColumnMajor = Array(allRows[0].size) { Array(allRows.size) {""} }
-        for ((rowIndex, row) in allRows.withIndex()) {
-            for ((colIndex, col) in row.withIndex()) {
-                eventFileColumnMajor[colIndex][rowIndex] = col
-            }
-        }
-        eventFileColumnMajor.forEach {
-            // assuming that first row contains field names as BIDS TSV
-            val field = it[0]
-            // add fields to combo box
-            fieldCB.addItem(field)
-            // add unique codes to each field, ignoring BIDS default numerical fields
-            if (!listOf("duration", "onset", "sample", "stim_file", "HED", "response_time").contains(field)) {
-                fieldAndUniqueCodeMap[field] = it.slice(1 until it.size).distinct()
-                isValueField[field] = false
-            } else {
-                fieldAndUniqueCodeMap[field] = listOf("HED")
-                isValueField[field] = true
-            }
-            // initialize fieldMap
-            fieldMap[field] = HashMap()
-            fieldAndUniqueCodeMap[field]!!.forEach { fieldMap[field]!![it] = "" }
-        }
-        // initialize tagging GUI
-        eventCodeList.codeSet = fieldAndUniqueCodeMap[fieldCB.selectedItem!!]!! // add codes of current field
-        eventCodeList.selectedIndex = 0 // select first code in the list
-        eventFileAnnotation = EventFileAnnotation(frame, this)
-        fieldCB.repaint()
-    }
     private fun addFieldSelectionPane(mainPane: Container) {
         val fieldSelectionPane = JPanel(FlowLayout())
         fieldSelectionPane.add(JLabel("Tagging field: "))
@@ -225,7 +197,7 @@ class CTagger {
             val finalJson = gson.toJson(fieldAndUniqueCodeMap).toString()
             launch<FieldGenerator>("{\"newFieldName\": \"trial_type\", \"eventFields\": $finalJson}")
         }
-        fieldSelectionPane.add(addFieldBtn)
+//        fieldSelectionPane.add(addFieldBtn)
 
         val eventFileTagBtn = JButton("Tag event file")
         eventFileTagBtn.addActionListener {
@@ -236,17 +208,21 @@ class CTagger {
 
         mainPane.add(fieldSelectionPane, BorderLayout.NORTH)
     }
+
+    /**
+     * Add Event code and tag Input panes
+     */
     private fun addCenterPane(mainPane: Container) {
         val eventPane = JPanel()
         eventPane.layout = BoxLayout(eventPane, BoxLayout.PAGE_AXIS)
-        val isValueCheckbox = JCheckBox("Check if value field")
-        isValueCheckbox.addItemListener {
-            if (it.stateChange == 1)
-                setValueField(fieldCB.selectedItem.toString())
-            else
-                unsetValueField(fieldCB.selectedItem.toString())
-        }
-        eventPane.add(isValueCheckbox)
+//        val isValueCheckbox = JCheckBox("Check if value field")
+//        isValueCheckbox.addItemListener {
+//            if (it.stateChange == 1)
+//                setValueField(fieldCB.selectedItem.toString())
+//            else
+//                unsetValueField(fieldCB.selectedItem.toString())
+//        }
+//        eventPane.add(isValueCheckbox)
 
         val eventCodePane = JScrollPane(eventCodeList)
         eventCodePane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
@@ -255,20 +231,20 @@ class CTagger {
         eventCodePane.background = BLUE_MEDIUM
         eventPane.add(eventCodePane)
 
-        inputPane.preferredSize = Dimension(600,300)
+        inputPane.preferredSize = Dimension(500,300)
         hedTagInput = HedTagInput(this)
-        hedTagInput.setBounds(0,0, 600,300)
+        hedTagInput.setBounds(0,0, 500,300)
         val tagInputPane = JScrollPane(hedTagInput)
         tagInputPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER // Force wrapping. Deduced from: http://java-sl.com/wrap.html
         tagInputPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        tagInputPane.setBounds(0,0,600,300)
+        tagInputPane.setBounds(0,0,500,300)
         tagInputPane.location = Point(0,0)
 
         hedTagList = HedTagList(this, tags, hedTagInput)
         searchResultPanel = JScrollPane(hedTagList)
         searchResultPanel.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
         searchResultPanel.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        searchResultPanel.setBounds(0, 0, 580,150)
+        searchResultPanel.setBounds(0, 0, 480,150)
         searchResultPanel.location = Point(15,150)
         searchResultPanel.isVisible = false
 
@@ -394,8 +370,12 @@ class CTagger {
                 val finalMap = HashMap<String,String>()
                 it.value.forEach {map ->
                     // ignore empty codes
-                    if (map.value.isNotEmpty())
-                        finalMap[map.key] = map.value
+                    if (map.value.isNotEmpty()) {
+                        // some clean-up
+                        var finalString = map.value
+                        finalString = finalString.replace("\n","")
+                        finalMap[map.key] = finalString
+                    }
                 }
                 if (finalMap.isNotEmpty())
                     bidsFieldMap[it.key] = hashMapOf(Pair("HED", finalMap))
@@ -438,51 +418,108 @@ class CTagger {
     }
 
     /**
-     * Action listener for import events.json menu item
-     * Importing events.json and update GUI
+     * Retrieve event info from .tsv file
+     * and populate GUI
      */
-    private fun deserializeBIDSJson(json: String) {
-        val type: Type = object : TypeToken<HashMap<String?, BIDSEventObject>?>() {}.type
-        val gson = Gson()
-        val result: HashMap<String, BIDSEventObject> = gson.fromJson(json,type)
-        println(result)
-        // reset if not empty
-        if (fieldMap.isNotEmpty()) {
-            JOptionPane.showMessageDialog(frame, "Clearing fieldMap")
-            fieldAndUniqueCodeMap.clear()
-            fieldMap.clear()
-            isValueField.clear()
-            oldFieldAndUniqueCodeMap.clear()
-            fieldCB.removeAllItems()
-        }
-        result.forEach {
-            // assuming that first row contains field names as BIDS TSV
-            val field = it.key.toLowerCase()
-            // add fields to combo box
-            fieldCB.addItem(field)
-            // add unique codes to each field, ignoring BIDS default numerical fields
-            if (listOf("duration", "onset", "sample", "stim_file", "hed", "response_time").contains(field)) {
-                fieldAndUniqueCodeMap[field] = listOf("HED")
-                isValueField[field] = true
-            } else {
-                if (it.value.Levels.isNotEmpty()) {
-                    fieldAndUniqueCodeMap[field] = it.value.Levels.keys.toList()
-                    isValueField[field] = false
+    private fun importBIDSEventTSV(file: File) {
+        try {
+            val settings = TsvParserSettings()
+            val parser = TsvParser(settings)
+            val allRows = parser.parseAll(file)
+//            eventFile = allRows.toTypedArray()
+            // reset if not empty
+            if (fieldMap.isNotEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Clearing fieldMap")
+                fieldAndUniqueCodeMap.clear()
+                fieldMap.clear()
+                isValueField.clear()
+                oldFieldAndUniqueCodeMap.clear()
+                fieldCB.removeAllItems()
+            }
+            val eventFileColumnMajor = Array(allRows[0].size) { Array(allRows.size) { "" } }
+            for ((rowIndex, row) in allRows.withIndex()) {
+                for ((colIndex, col) in row.withIndex()) {
+                    eventFileColumnMajor[colIndex][rowIndex] = col
                 }
-                else {
+            }
+            eventFileColumnMajor.forEach {
+                // assuming that first row contains field names as BIDS TSV
+                val field = it[0]
+                // add fields to combo box
+                fieldCB.addItem(field)
+                // add unique codes to each field, ignoring BIDS default numerical fields
+                if (!listOf("duration", "onset", "sample", "stim_file", "HED", "response_time").contains(field)) {
+                    fieldAndUniqueCodeMap[field] = it.slice(1 until it.size).distinct()
+                    isValueField[field] = false
+                } else {
                     fieldAndUniqueCodeMap[field] = listOf("HED")
                     isValueField[field] = true
                 }
+                // initialize fieldMap
+                fieldMap[field] = HashMap()
+                fieldAndUniqueCodeMap[field]!!.forEach { fieldMap[field]!![it] = "" }
             }
-            // initialize fieldMap
-            fieldMap[field] = HashMap()
-            fieldAndUniqueCodeMap[field]!!.forEach { fieldMap[field]!![it] = "" }
+            // initialize tagging GUI
+            eventCodeList.codeSet = fieldAndUniqueCodeMap[fieldCB.selectedItem!!]!! // add codes of current field
+            eventCodeList.selectedIndex = 0 // select first code in the list
+            eventFileAnnotation = EventFileAnnotation(frame, this)
+            fieldCB.repaint()
         }
-        // initialize/update tagging GUI
-        eventCodeList.codeSet = fieldAndUniqueCodeMap[fieldCB.selectedItem!!]!! // add codes of current field
-        eventCodeList.selectedIndex = 0 // select first code in the list
-        eventFileAnnotation = EventFileAnnotation(frame, this)
-        fieldCB.repaint()
+        catch (e: Exception) {
+            JOptionPane.showMessageDialog(frame, "Error importing BIDS _events.tsv", "Import error", JOptionPane.ERROR_MESSAGE)
+        }
+    }
+    /**
+     * Action listener for import events.json menu item
+     * Importing events.json and update GUI
+     */
+    private fun importBIDSEventJson(file: File) {
+        try {
+            val json: String = file.readText()
+            val type: Type = object : TypeToken<HashMap<String?, BIDSEventObject>?>() {}.type
+            val gson = Gson()
+            val result: HashMap<String, BIDSEventObject> = gson.fromJson(json, type)
+            println(result)
+            // reset if not empty
+            if (fieldMap.isNotEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Clearing fieldMap")
+                fieldAndUniqueCodeMap.clear()
+                fieldMap.clear()
+                isValueField.clear()
+                oldFieldAndUniqueCodeMap.clear()
+                fieldCB.removeAllItems()
+            }
+            result.forEach {
+                // assuming that first row contains field names as BIDS TSV
+                val field = it.key.toLowerCase()
+                // add fields to combo box
+                fieldCB.addItem(field)
+                // add unique codes to each field, ignoring BIDS default numerical fields
+                if (listOf("duration", "onset", "sample", "stim_file", "hed", "response_time").contains(field)) {
+                    fieldAndUniqueCodeMap[field] = listOf("HED")
+                    isValueField[field] = true
+                } else {
+                    if (it.value.Levels.isNotEmpty()) {
+                        fieldAndUniqueCodeMap[field] = it.value.Levels.keys.toList()
+                        isValueField[field] = false
+                    } else {
+                        fieldAndUniqueCodeMap[field] = listOf("HED")
+                        isValueField[field] = true
+                    }
+                }
+                // initialize fieldMap
+                fieldMap[field] = HashMap()
+                fieldAndUniqueCodeMap[field]!!.forEach { fieldMap[field]!![it] = "" }
+            }
+            // initialize/update tagging GUI
+            eventCodeList.codeSet = fieldAndUniqueCodeMap[fieldCB.selectedItem!!]!! // add codes of current field
+            eventCodeList.selectedIndex = 0 // select first code in the list
+            eventFileAnnotation = EventFileAnnotation(frame, this)
+            fieldCB.repaint()
+        }
+        catch (e: Exception) {
+            JOptionPane.showMessageDialog(frame, "Error importing BIDS _events.json", "Import error", JOptionPane.ERROR_MESSAGE)
+        }
     }
 
     /**
