@@ -38,15 +38,15 @@ class EventCodeList(val tagger: CTagger) : JList<String>() {
                     println(tagger.fieldMap)
 
                     // Check for invalid tag. Only proceed if no invalid tags found
-                    val invalidTags = tagger.hedTagInput.findInvalidTags()
-                    if (invalidTags.isNotEmpty()) {
-                        JOptionPane.showMessageDialog(tagger.frame,
-                                "Please fix invalid tags (in red)",
-                                "Invalid tags found",
-                                JOptionPane.ERROR_MESSAGE);
-                        eList.setSelectedValue(prevSelected, true)
-                    }
-                    else {
+//                    val invalidTags = tagger.hedTagInput.findInvalidTags()
+//                    if (invalidTags.isNotEmpty()) {
+//                        JOptionPane.showMessageDialog(tagger.frame,
+//                                "Please fix invalid tags (in red)",
+//                                "Invalid tags found",
+//                                JOptionPane.ERROR_MESSAGE);
+//                        eList.setSelectedValue(prevSelected, true)
+//                    }
+//                    else {
                         // save current tags
                         val curField = tagger.fieldCB.selectedItem.toString()
                         val codeMap = tagger.fieldMap[curField]
@@ -63,7 +63,7 @@ class EventCodeList(val tagger: CTagger) : JList<String>() {
                         // hide search result pane
                         tagger.hideSearchResultPane()
                     }
-                }
+//                }
             }
         }
     }
