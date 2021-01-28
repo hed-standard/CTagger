@@ -22,6 +22,7 @@ fun main() {
 }
 
 class CTagger {
+    var isVerbose = false
     val frame = JFrame("CTAGGER")
     var hedVersion = ""
     lateinit var unitClasses: Set<UnitClassXmlModel>
@@ -76,7 +77,7 @@ class CTagger {
 
         // start saving thread
         timer(name = "Save tags", period = 3000) {
-            println("Saving tags")
+            if (isVerbose) println("Saving tags")
             // save current tags
             try {
                 val curField = fieldCB.selectedItem.toString()
@@ -261,12 +262,13 @@ class CTagger {
     private fun addDoneBtn(mainPane: Container) {
         val doneBtn = JButton("Done")
         doneBtn.addActionListener {
-            val finalJson = prettyPrintJson(exportBIDSJson(fieldMap))
-            println(finalJson)
-            JOptionPane.showMessageDialog(frame,
-                    finalJson,
-                    "HED tag final JSON string",
-                    JOptionPane.PLAIN_MESSAGE)
+            showBIDSWindow()
+//            val finalJson = prettyPrintJson(exportBIDSJson(fieldMap))
+//            println(finalJson)
+//            JOptionPane.showMessageDialog(frame,
+//                    finalJson,
+//                    "HED tag final JSON string",
+//                    JOptionPane.PLAIN_MESSAGE)
             frame.dispatchEvent(WindowEvent(frame, WindowEvent.WINDOW_CLOSING))
         }
 
@@ -388,7 +390,7 @@ class CTagger {
         return gson.toJson(fieldMap)
     }
 
-    fun showBIDSWindow() {
+    private fun showBIDSWindow() {
         val json = prettyPrintJson(exportBIDSJson(fieldMap))
         val textarea = JTextArea(10,20)
         textarea.text = json
@@ -521,6 +523,8 @@ class CTagger {
             JOptionPane.showMessageDialog(frame, "Error importing BIDS _events.json", "Import error", JOptionPane.ERROR_MESSAGE)
         }
     }
+
+
 
     /**
      * For deserialization of events.json
