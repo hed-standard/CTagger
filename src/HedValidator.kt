@@ -1,9 +1,11 @@
 class HedValidator(private val schema: HashMap<String, TagModel>, private val tagger: CTagger) {
     fun validateEntry(entry: String): Boolean{
-        val splitted = entry.split('/')
+        val entry_trimmed = entry.trim()
+        println(entry_trimmed)
+        val splitted = entry_trimmed.split('/')
         if (splitted.size < 2) {
             // unique node. Check for valid and give suggestions
-            return isPartialEntryValid(entry)
+            return isPartialEntryValid(entry_trimmed)
         }
         else { // has multiple nodes
             val parentNode = splitted[splitted.size-2]
@@ -32,7 +34,7 @@ class HedValidator(private val schema: HashMap<String, TagModel>, private val ta
                                 return validateValueInput(valueInput, tagModel)
                             else {
                                 // requiredChild yet not extensionAllowed --> Value must exists in schema. Validating the whole entry
-                                return isPartialEntryValid(entry)
+                                return isPartialEntryValid(entry_trimmed)
                             }
                         }
                     }
@@ -42,14 +44,14 @@ class HedValidator(private val schema: HashMap<String, TagModel>, private val ta
                     }
                     else {
                         // unfinished node typing --> show suggestion
-                        return isPartialEntryValid(entry)
+                        return isPartialEntryValid(entry_trimmed)
                     }
                 }
             }
             else {
                 // last node exists in schema. Check if full path is valid
                 // if any of previous nodes was invalid, whole entry will be invalid
-                return schema.containsKey(entry)
+                return schema.containsKey(entry_trimmed)
             }
         }
     }
@@ -96,7 +98,7 @@ class HedValidator(private val schema: HashMap<String, TagModel>, private val ta
     }
 
     private fun findMatchingTags(entry: String): List<String> {
-        val tags = schema.keys
+        val tags = tagger.tags
         return tags.filter {
 //            // parse takeValues node if applicable
 //            val splitted = target.split('/')
