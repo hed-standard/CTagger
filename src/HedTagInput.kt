@@ -133,29 +133,6 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
         }
     }
 
-    fun findInvalidTags(): List<String> {
-        val invalidTags = mutableListOf<String>()
-        var i = 0
-        while (i < text.length) {
-            val loc = getWordAtPos(i)
-            if (loc != null) {
-                val tag = text.substring(loc.first, loc.second)
-                if (tagger.hedValidator.validateEntry(tag)) {
-                    invalidTags.add(tag)
-                }
-                // advance to beginning of next word
-                val regex = Regex(validTagPattern)
-                i = loc.second
-                while (i < text.length && !regex.matches(text[i].toString())) {
-                    i++
-                }
-            }
-            else {
-                i++
-            }
-        }
-        return invalidTags
-    }
     override fun keyReleased(e: KeyEvent?) {
     }
 
