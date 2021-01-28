@@ -1,7 +1,7 @@
 class HedValidator(private val schema: HashMap<String, TagModel>, private val tagger: CTagger) {
     fun validateEntry(entry: String): Boolean{
         val entry_trimmed = entry.trim()
-        println(entry_trimmed)
+        if (tagger.isVerbose) println(entry_trimmed)
         val splitted = entry_trimmed.split('/')
         if (splitted.size < 2) {
             // unique node. Check for valid and give suggestions
