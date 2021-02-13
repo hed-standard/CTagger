@@ -31,7 +31,7 @@ class CTagger {
     val schema: HashMap<String, TagModel> = HashMap()
     lateinit var hedValidator: HedValidator
     val fieldMap = HashMap<String, HashMap<String,String>>()
-    var fieldCB = JComboBox<String>()
+    val fieldCB = FieldList(this)
     var eventCodeList: EventCodeList
     lateinit var hedTagInput: HedTagInput
     lateinit var hedTagList: HedTagList
@@ -147,31 +147,7 @@ class CTagger {
     private fun addFieldSelectionPane(mainPane: Container) {
         val fieldSelectionPane = JPanel(FlowLayout())
         fieldSelectionPane.add(JLabel("Tagging field: "))
-        fieldCB.addItemListener {
-            if (it.stateChange == ItemEvent.DESELECTED) {
-                val curField = it.item as String
-                println(curField)
-                // save current work
-                if (curField != null) {
-                    val map = fieldMap[curField!!]
-                    val key = eventCodeList.selectedValue
-//                    eventCodeList.prevSelected = null
-                    println(fieldMap)
-                    println(key)
-                    println(map)
-                    if (map != null && key != null)
-                        map[key] = hedTagInput.getCleanHEDString()
-                    println(map)
-                    println(fieldMap)
-                    hedTagInput.text = null
-                }
-                // set new field and new code list
-                if (fieldCB.selectedItem != null && fieldAndUniqueCodeMap.containsKey(fieldCB.selectedItem.toString()!!)) {
-                    // get unique event codes
-                    eventCodeList.codeSet = fieldAndUniqueCodeMap[fieldCB.selectedItem!!]!!
-                }
-            }
-        }
+        fieldCB.initializeListener()
         fieldSelectionPane.add(fieldCB)
         val addFieldBtn = JButton("Create new field")
         addFieldBtn.addActionListener {
