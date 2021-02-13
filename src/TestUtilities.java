@@ -11,8 +11,9 @@ public abstract class TestUtilities {
 	public static final String HedFileName = "./HEDLatest.xml"; // TODO change back to relative path
 	public static final String HedRequiredRecommended = 
 			"data/testHedRequired.xml";
-	public static final String JsonEventsArrays = 
+	public static final String JsonEventsArrays =
 			"data/JSON Events Tag Arrays.txt";
+	public static final String EventJsonFileName = "data/task-FaceRecognition_events.json";
 	public static final String saveFileTest = "data/saveFileTest.xml";
 	public static final String XmlDataFile = "data/xmlData.xml";
 	public static final String DelimitedString = "data/TabDelimitedText.txt";
