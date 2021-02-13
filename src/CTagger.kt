@@ -39,7 +39,6 @@ class CTagger {
     var schemaView: SchemaView
     val inputPane = JLayeredPane()
 //    lateinit var eventFile: Array<Array<String>>
-    lateinit var eventFileAnnotation: EventFileAnnotation
     var fieldAndUniqueCodeMap = HashMap<String, List<String>>()
     private val BLUE_MEDIUM = Color(168, 194, 255)
     private val isValueField = HashMap<String, Boolean>()
@@ -200,11 +199,6 @@ class CTagger {
         }
 //        fieldSelectionPane.add(addFieldBtn)
 
-        val eventFileTagBtn = JButton("Tag event file")
-        eventFileTagBtn.addActionListener {
-            eventFileAnnotation.isVisible = true
-        }
-//        fieldSelectionPane.add(eventFileTagBtn)
         fieldSelectionPane.background = BLUE_MEDIUM
 
         mainPane.add(fieldSelectionPane, BorderLayout.NORTH)
@@ -472,7 +466,6 @@ class CTagger {
             // initialize tagging GUI
             eventCodeList.codeSet = fieldAndUniqueCodeMap[fieldCB.selectedItem!!]!! // add codes of current field
             eventCodeList.selectedIndex = 0 // select first code in the list
-            eventFileAnnotation = EventFileAnnotation(frame, this)
             fieldCB.repaint()
         }
         catch (e: Exception) {
@@ -524,7 +517,6 @@ class CTagger {
             // initialize/update tagging GUI
             eventCodeList.codeSet = fieldAndUniqueCodeMap[fieldCB.selectedItem!!]!! // add codes of current field
             eventCodeList.selectedIndex = 0 // select first code in the list
-            eventFileAnnotation = EventFileAnnotation(frame, this)
             fieldCB.repaint()
         }
         catch (e: Exception) {
