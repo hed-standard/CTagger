@@ -16,29 +16,25 @@ import kotlin.concurrent.timer
 
 
 fun main() {
-    SwingUtilities.invokeLater { CTagger(false, false, "", true) }
+    SwingUtilities.invokeLater { CTagger(isJson = false, isTSV = false, filename = "", isScratch=true) }
 }
 
 class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var isScratch:Boolean) {
     var isVerbose = false
-    val frame = JFrame("CTAGGER")
+    private val frame = JFrame("CTAGGER")
     var hedVersion = ""
     lateinit var unitClasses: Set<UnitClassXmlModel>
     lateinit var unitModifiers: ArrayList<UnitModifierXmlModel>
     val tags: MutableList<String> = mutableListOf()
-    val schema: HashMap<String, TagModel> = HashMap()
+    private val schema: HashMap<String, TagModel> = HashMap()
     lateinit var hedValidator: HedValidator
     val fieldList = FieldList(this)
     var eventCodeList: EventCodeList
     lateinit var hedTagInput: HedTagInput
     lateinit var hedTagList: HedTagList
     lateinit var searchResultPanel: JScrollPane
-    lateinit var schemaView: SchemaView
-    val inputPane = JLayeredPane()
-//    lateinit var eventFile: Array<Array<String>>
-//    private var javaFxLaunched = false
-
-
+    private var schemaView: SchemaView
+    private val inputPane = JLayeredPane()
 
     init {
         getHedXmlModel()
@@ -48,8 +44,10 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             importBIDSEventTSV(File(filename))
         else if (isJson)
             importBIDSEventJson(File(filename))
-        else
+        else {
+            isScratch = true
             importBIDSEventJson(File(TestUtilities.ScratchJsonFileName))
+        }
 
         frame.setSize(800, 800)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
