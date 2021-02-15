@@ -1,22 +1,27 @@
 import java.awt.BorderLayout
+import java.awt.Font
 import java.awt.Toolkit
 import javax.swing.*
+import javax.swing.border.EmptyBorder
 
 fun main() {
     SwingUtilities.invokeLater { TaggerLauncher() }
 }
 class TaggerLauncher: JFrame() {
     init {
-        setSize(300, 500)
-        defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-        val dim = Toolkit.getDefaultToolkit().screenSize
-        setLocation(dim.width / 2 - size.width / 2, dim.height / 2 - size.height / 2)
+        title = "Welcome to CTagger"
+        defaultCloseOperation = EXIT_ON_CLOSE
 
         val mainPane = contentPane
         mainPane.layout = BorderLayout()
 
-        mainPane.add(JLabel("Welcome to CTagger!"), BorderLayout.NORTH)
+        val label = JLabel("Choose one of the options below to start tagging", SwingConstants.CENTER)
+        label.font = Font("Sans Serif", Font.BOLD, 14)
+        label.foreground = Style.BLUE_DARK
+        label.border = EmptyBorder(10,10,10,10)
+        mainPane.add(label, BorderLayout.NORTH)
 
+        val btnPanel = JPanel()
         val importTSVBtn = JButton("Import spreadsheet")
         importTSVBtn.addActionListener {
             val fc = JFileChooser()
@@ -39,13 +44,19 @@ class TaggerLauncher: JFrame() {
         startScratchBtn.addActionListener {
             SwingUtilities.invokeLater { CTagger(isJson = false, isTSV = false, filename = "", isScratch=true) }
         }
-        mainPane.add(importTSVBtn, BorderLayout.LINE_START)
-        mainPane.add(importJsonBtn, BorderLayout.CENTER)
-        mainPane.add(startScratchBtn, BorderLayout.LINE_END)
+        btnPanel.add(importTSVBtn)
+        btnPanel.add(importJsonBtn)
+        btnPanel.add(startScratchBtn)
+        btnPanel.border = EmptyBorder(10,10,10,10)
+        btnPanel.background = Style.BLUE_MEDIUM
+
+        mainPane.add(btnPanel, BorderLayout.CENTER)
 
         background = Style.BLUE_MEDIUM
         mainPane.background = Style.BLUE_MEDIUM
         pack()
+        val dim = Toolkit.getDefaultToolkit().screenSize
+        setLocation(dim.width / 2 - size.width / 2, dim.height / 2 - size.height / 2)
         isVisible = true
     }
 }
