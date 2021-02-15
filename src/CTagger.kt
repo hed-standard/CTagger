@@ -3,9 +3,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.univocity.parsers.tsv.TsvParser
 import com.univocity.parsers.tsv.TsvParserSettings
-import tornadofx.launch
 import java.awt.*
-import java.awt.event.ItemEvent
 import java.awt.event.WindowEvent
 import java.io.File
 import java.io.FileOutputStream
@@ -30,8 +28,7 @@ class CTagger {
     val tags: MutableList<String> = mutableListOf()
     val schema: HashMap<String, TagModel> = HashMap()
     lateinit var hedValidator: HedValidator
-    val fieldMap = HashMap<String, HashMap<String,String>>()
-    val fieldCB = FieldList(this)
+    val fieldList = FieldList(this)
     var eventCodeList: EventCodeList
     lateinit var hedTagInput: HedTagInput
     lateinit var hedTagList: HedTagList
@@ -39,10 +36,7 @@ class CTagger {
     var schemaView: SchemaView
     val inputPane = JLayeredPane()
 //    lateinit var eventFile: Array<Array<String>>
-    var fieldAndUniqueCodeMap = HashMap<String, List<String>>()
     private val BLUE_MEDIUM = Color(168, 194, 255)
-    private val isValueField = HashMap<String, Boolean>()
-    private val oldFieldAndUniqueCodeMap = HashMap<String, List<String>>()
 //    private var javaFxLaunched = false
 
 
@@ -79,7 +73,8 @@ class CTagger {
             if (isVerbose) println("Saving tags")
             // save current tags
             try {
-                val curField = fieldCB.selectedItem.toString()
+                val curField = fieldList.selectedItem.toString()
+                val fieldMap = fieldList.fieldMap
                 if (curField != null && fieldMap.containsKey(curField)) {
                     val codeMap = fieldMap[curField]
                     val selected = eventCodeList.selectedValue
@@ -147,36 +142,15 @@ class CTagger {
     private fun addFieldSelectionPane(mainPane: Container) {
         val fieldSelectionPane = JPanel(FlowLayout())
         fieldSelectionPane.add(JLabel("Tagging field: "))
-        fieldCB.initializeListener()
-        fieldSelectionPane.add(fieldCB)
+        fieldList.initializeListener()
+        fieldSelectionPane.add(fieldList)
         val addFieldBtn = JButton("Create new field")
         addFieldBtn.addActionListener {
-
-//            public static void myLaunch(Class<? extends Application> applicationClass) {
-//                if (!javaFxLaunched) { // First time
-//                    Platform.setImplicitExit(false);
-//                    new Thread(()->Application.launch(applicationClass)).start();
-//                    javaFxLaunched = true;
-//                } else { // Next times
-//                    Platform.runLater(()->{
-//                        try {
-//                            Application application = applicationClass.newInstance();
-//                            Stage primaryStage = new Stage();
-//                            application.start(primaryStage);
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//                    });
-//                }
-//            }
-            val gson = Gson()
-            val finalJson = gson.toJson(fieldAndUniqueCodeMap).toString()
-            launch<FieldGenerator>("{\"newFieldName\": \"trial_type\", \"eventFields\": $finalJson}")
+            val field = JOptionPane.showInputDialog("New field name")
+            if (field.isNotEmpty()) fieldList.addField(field)
         }
-//        fieldSelectionPane.add(addFieldBtn)
-
+        fieldSelectionPane.add(addFieldBtn)
         fieldSelectionPane.background = BLUE_MEDIUM
-
         mainPane.add(fieldSelectionPane, BorderLayout.NORTH)
     }
 
@@ -301,31 +275,31 @@ class CTagger {
         }
     }
 
-    fun setValueField(field: String) {
-        isValueField[field] = true
-        if (field in fieldAndUniqueCodeMap) {
-            oldFieldAndUniqueCodeMap[field] = fieldAndUniqueCodeMap[field]!!
-            fieldAndUniqueCodeMap[field] = listOf("HED")
-            eventCodeList.codeSet = fieldAndUniqueCodeMap[field]!!
-        }
-        if (field in fieldMap) {
-            fieldMap[field]!!.clear()
-            fieldMap[field]!!["HED"] = ""
-        }
-    }
-    fun unsetValueField(field: String) {
-        if (field in isValueField && isValueField[field]!!) {
-            isValueField[field] = false
-            if (field in oldFieldAndUniqueCodeMap) {
-                fieldAndUniqueCodeMap[field] = oldFieldAndUniqueCodeMap[field]!!
-                eventCodeList.codeSet = fieldAndUniqueCodeMap[field]!!
-                if (field in fieldMap) {
-                    fieldMap[field]!!.clear()
-                    fieldAndUniqueCodeMap[field]!!.forEach{fieldMap[field]!![it] = ""}
-                }
-            }
-        }
-    }
+//    fun setValueField(field: String) {
+//        isValueField[field] = true
+//        if (field in fieldAndUniqueCodeMap) {
+//            oldFieldAndUniqueCodeMap[field] = fieldAndUniqueCodeMap[field]!!
+//            fieldAndUniqueCodeMap[field] = listOf("HED")
+//            eventCodeList.codeSet = fieldAndUniqueCodeMap[field]!!
+//        }
+//        if (field in fieldMap) {
+//            fieldMap[field]!!.clear()
+//            fieldMap[field]!!["HED"] = ""
+//        }
+//    }
+//    fun unsetValueField(field: String) {
+//        if (field in isValueField && isValueField[field]!!) {
+//            isValueField[field] = false
+//            if (field in oldFieldAndUniqueCodeMap) {
+//                fieldAndUniqueCodeMap[field] = oldFieldAndUniqueCodeMap[field]!!
+//                eventCodeList.codeSet = fieldAndUniqueCodeMap[field]!!
+//                if (field in fieldMap) {
+//                    fieldMap[field]!!.clear()
+//                    fieldAndUniqueCodeMap[field]!!.forEach{fieldMap[field]!![it] = ""}
+//                }
+//            }
+//        }
+//    }
 
     /**
      * Export field map (fMap) to json accordingly to HED-BIDS specification
@@ -335,7 +309,7 @@ class CTagger {
         val jsonFieldMap = HashMap<String, Any>()
         fMap.forEach {
             // value type, ignoring empty fields
-            if (isValueField.containsKey(it.key) && isValueField[it.key]!! && it.value.containsKey("HED") && it.value["HED"]!!.isNotEmpty())
+            if (fieldList.isValueField.containsKey(it.key) && fieldList.isValueField[it.key]!! && it.value.containsKey("HED") && it.value["HED"]!!.isNotEmpty())
                 if (isBIDS)
                     jsonFieldMap[it.key] = hashMapOf(Pair("HED", it.value["HED"]!!))
                 else
@@ -366,7 +340,7 @@ class CTagger {
     }
 
     private fun showJsonWindow(isBIDS: Boolean) {
-        val json = prettyPrintJson(exportToJson(fieldMap, isBIDS = isBIDS))
+        val json = prettyPrintJson(exportToJson(fieldList.fieldMap, isBIDS = isBIDS))
         val textarea = JTextArea(10,20)
         textarea.text = json
         textarea.isEditable = false
@@ -408,13 +382,9 @@ class CTagger {
             val allRows = parser.parseAll(file)
 //            eventFile = allRows.toTypedArray()
             // reset if not empty
-            if (fieldMap.isNotEmpty()) {
-                JOptionPane.showMessageDialog(frame, "Clearing fieldMap")
-                fieldAndUniqueCodeMap.clear()
-                fieldMap.clear()
-                isValueField.clear()
-                oldFieldAndUniqueCodeMap.clear()
-                fieldCB.removeAllItems()
+            if (fieldList.fieldMap.isNotEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Clearing old fields")
+                fieldList.clear()
             }
             val eventFileColumnMajor = Array(allRows[0].size) { Array(allRows.size) { "" } }
             for ((rowIndex, row) in allRows.withIndex()) {
@@ -426,23 +396,12 @@ class CTagger {
                 // assuming that first row contains field names as BIDS TSV
                 val field = it[0]
                 // add fields to combo box
-                fieldCB.addItem(field)
-                // add unique codes to each field, ignoring BIDS default numerical fields
-                if (!listOf("duration", "onset", "sample", "stim_file", "HED", "response_time").contains(field)) {
-                    fieldAndUniqueCodeMap[field] = it.slice(1 until it.size).distinct()
-                    isValueField[field] = false
-                } else {
-                    fieldAndUniqueCodeMap[field] = listOf("HED")
-                    isValueField[field] = true
-                }
-                // initialize fieldMap
-                fieldMap[field] = HashMap()
-                fieldAndUniqueCodeMap[field]!!.forEach { fieldMap[field]!![it] = "" }
+                fieldList.addField(field)
             }
             // initialize tagging GUI
-            eventCodeList.codeSet = fieldAndUniqueCodeMap[fieldCB.selectedItem!!]!! // add codes of current field
+            eventCodeList.codeSet = fieldList.fieldAndUniqueCodeMap[fieldList.selectedItem!!]!! // add codes of current field
             eventCodeList.selectedIndex = 0 // select first code in the list
-            fieldCB.repaint()
+            fieldList.repaint()
         }
         catch (e: Exception) {
             JOptionPane.showMessageDialog(frame, "Error importing BIDS _events.tsv", "Import error", JOptionPane.ERROR_MESSAGE)
@@ -455,45 +414,24 @@ class CTagger {
     private fun importBIDSEventJson(file: File) {
         try {
             val json: String = file.readText()
-            val type: Type = object : TypeToken<HashMap<String?, BIDSEventObject>?>() {}.type
+            val type: Type = object : TypeToken<HashMap<String?, BIDSFieldDict>?>() {}.type
             val gson = Gson()
-            val result: HashMap<String, BIDSEventObject> = gson.fromJson(json, type)
+            val result: HashMap<String, BIDSFieldDict> = gson.fromJson(json, type)
             println(result)
             // reset if not empty
-            if (fieldMap.isNotEmpty()) {
-                JOptionPane.showMessageDialog(frame, "Clearing fieldMap")
-                fieldAndUniqueCodeMap.clear()
-                fieldMap.clear()
-                isValueField.clear()
-                oldFieldAndUniqueCodeMap.clear()
-                fieldCB.removeAllItems()
+            if (!fieldList.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Clearing old fields")
+                fieldList.clear()
             }
             result.forEach {
                 // assuming that first row contains field names as BIDS TSV
-                val field = it.key.toLowerCase()
                 // add fields to combo box
-                fieldCB.addItem(field)
-                // add unique codes to each field, ignoring BIDS default numerical fields
-                if (listOf("duration", "onset", "sample", "stim_file", "hed", "response_time").contains(field)) {
-                    fieldAndUniqueCodeMap[field] = listOf("HED")
-                    isValueField[field] = true
-                } else {
-                    if (it.value.Levels.isNotEmpty()) {
-                        fieldAndUniqueCodeMap[field] = it.value.Levels.keys.toList()
-                        isValueField[field] = false
-                    } else {
-                        fieldAndUniqueCodeMap[field] = listOf("HED")
-                        isValueField[field] = true
-                    }
-                }
-                // initialize fieldMap
-                fieldMap[field] = HashMap()
-                fieldAndUniqueCodeMap[field]!!.forEach { fieldMap[field]!![it] = "" }
+                fieldList.addFieldFromDict(it.key.toLowerCase(), it.value)
             }
             // initialize/update tagging GUI
-            eventCodeList.codeSet = fieldAndUniqueCodeMap[fieldCB.selectedItem!!]!! // add codes of current field
+            eventCodeList.codeSet = fieldList.fieldAndUniqueCodeMap[fieldList.selectedItem!!]!! // add codes of current field
             eventCodeList.selectedIndex = 0 // select first code in the list
-            fieldCB.repaint()
+            fieldList.repaint()
         }
         catch (e: Exception) {
             JOptionPane.showMessageDialog(frame, "Error importing BIDS _events.json", "Import error", JOptionPane.ERROR_MESSAGE)
@@ -505,12 +443,14 @@ class CTagger {
     /**
      * For deserialization of events.json
      */
-    class BIDSEventObject {
+    class BIDSFieldDict{
         var LongName:String = ""
         var Description:String = ""
         var Levels:HashMap<String,String> = HashMap()
         var Units:String = ""
         var HED:Any = ""
     }
+
+
 }
 
