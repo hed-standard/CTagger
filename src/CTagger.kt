@@ -16,10 +16,10 @@ import kotlin.concurrent.timer
 
 
 fun main() {
-    SwingUtilities.invokeLater { CTagger() }
+    SwingUtilities.invokeLater { CTagger(false, false, "", true) }
 }
 
-class CTagger {
+class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var isScratch:Boolean) {
     var isVerbose = false
     val frame = JFrame("CTAGGER")
     var hedVersion = ""
@@ -33,10 +33,9 @@ class CTagger {
     lateinit var hedTagInput: HedTagInput
     lateinit var hedTagList: HedTagList
     lateinit var searchResultPanel: JScrollPane
-    var schemaView: SchemaView
+    lateinit var schemaView: SchemaView
     val inputPane = JLayeredPane()
 //    lateinit var eventFile: Array<Array<String>>
-    private val BLUE_MEDIUM = Color(168, 194, 255)
 //    private var javaFxLaunched = false
 
 
@@ -44,10 +43,14 @@ class CTagger {
     init {
         getHedXmlModel()
         eventCodeList = EventCodeList(this)
-//        importBIDSEventTSV(File("/Users/dtyoung/test_events.tsv"))
-        importBIDSEventJson(File(TestUtilities.EventJsonFileName))
-    }
-    constructor() {
+
+        if (isTSV)
+            importBIDSEventTSV(File(filename))
+        else if (isJson)
+            importBIDSEventJson(File(filename))
+        else
+            importBIDSEventJson(File(TestUtilities.ScratchJsonFileName))
+
         frame.setSize(800, 800)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         val dim = Toolkit.getDefaultToolkit().screenSize
@@ -63,8 +66,8 @@ class CTagger {
         addCenterPane(mainPane)
         addDoneBtn(mainPane)
 
-        frame.background = BLUE_MEDIUM
-        mainPane.background = BLUE_MEDIUM
+        frame.background = Style.BLUE_MEDIUM
+        mainPane.background = Style.BLUE_MEDIUM
         frame.pack()
         frame.isVisible = true
 
@@ -150,7 +153,7 @@ class CTagger {
             if (field.isNotEmpty()) fieldList.addField(field)
         }
         fieldSelectionPane.add(addFieldBtn)
-        fieldSelectionPane.background = BLUE_MEDIUM
+        fieldSelectionPane.background = Style.BLUE_MEDIUM
         mainPane.add(fieldSelectionPane, BorderLayout.NORTH)
     }
 
@@ -173,7 +176,7 @@ class CTagger {
         eventCodePane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
         eventCodePane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
         eventCodePane.preferredSize = Dimension(300,300)
-        eventCodePane.background = BLUE_MEDIUM
+        eventCodePane.background = Style.BLUE_MEDIUM
         eventPane.add(eventCodePane)
 
         inputPane.preferredSize = Dimension(500,300)
@@ -198,7 +201,7 @@ class CTagger {
         val tagPane = JPanel(GridLayout(1,2))
         tagPane.add(eventPane)
         tagPane.add(inputPane)
-        tagPane.background = BLUE_MEDIUM
+        tagPane.background = Style.BLUE_MEDIUM
 
         mainPane.add(tagPane, BorderLayout.CENTER)
     }
