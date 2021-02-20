@@ -379,25 +379,26 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
     private fun importBIDSEventTSV(file: File) {
         try {
             val settings = TsvParserSettings()
+            settings.format.lineSeparator = "\n".toCharArray()
             val parser = TsvParser(settings)
+            // parse file as a collection of rows
             val allRows = parser.parseAll(file)
-//            eventFile = allRows.toTypedArray()
+            val eventFile= Array(allRows[0].size) { Array(allRows.size) { "" } }
+            for ((rowIndex, row) in allRows.withIndex()) {
+                for ((colIndex, col) in row.withIndex()) {
+                    eventFile[colIndex][rowIndex] = col
+                }
+            }
+
+            // parse successfully. Creating fields
             // reset if not empty
-            if (fieldList.fieldMap.isNotEmpty()) {
+            if (!fieldList.isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "Clearing old fields")
                 fieldList.clear()
             }
-            val eventFileColumnMajor = Array(allRows[0].size) { Array(allRows.size) { "" } }
-            for ((rowIndex, row) in allRows.withIndex()) {
-                for ((colIndex, col) in row.withIndex()) {
-                    eventFileColumnMajor[colIndex][rowIndex] = col
-                }
-            }
-            eventFileColumnMajor.forEach {
-                // assuming that first row contains field names as BIDS TSV
-                val field = it[0]
+            eventFile.forEach {
                 // add fields to combo box
-                fieldList.addField(field)
+                fieldList.addFieldFromColumn(it)
             }
             // initialize tagging GUI
             eventCodeList.codeSet = fieldList.fieldAndUniqueCodeMap[fieldList.selectedItem!!]!! // add codes of current field

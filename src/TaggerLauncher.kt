@@ -1,6 +1,7 @@
 import java.awt.BorderLayout
 import java.awt.Font
 import java.awt.Toolkit
+import java.awt.event.WindowEvent
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 
@@ -29,6 +30,7 @@ class TaggerLauncher: JFrame() {
             if (fileChosen == JFileChooser.APPROVE_OPTION) {
                 val file = fc.selectedFile.toString()
                 SwingUtilities.invokeLater { CTagger(isJson = false, isTSV = true, filename = file, isScratch = false) }
+                isVisible = false
             }
         }
         val importJsonBtn = JButton("Import dictionary")
@@ -38,11 +40,13 @@ class TaggerLauncher: JFrame() {
             if (fileChosen == JFileChooser.APPROVE_OPTION) {
                 val file = fc.selectedFile.toString()
                 SwingUtilities.invokeLater { CTagger(isJson = true, isTSV = false, filename = file, isScratch = false) }
+                isVisible = false
             }
         }
         val startScratchBtn = JButton("Quick tagging")
         startScratchBtn.addActionListener {
             SwingUtilities.invokeLater { CTagger(isJson = false, isTSV = false, filename = "", isScratch=true) }
+            isVisible = false
         }
         btnPanel.add(importTSVBtn)
         btnPanel.add(importJsonBtn)

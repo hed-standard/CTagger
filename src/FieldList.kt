@@ -41,6 +41,25 @@ class FieldList(val tagger: CTagger): JComboBox<String>() {
         fieldMap[field] = HashMap()
         addItem(field)
     }
+
+    fun addFieldFromColumn(column:Array<String>) {
+        // assuming first row contains field name
+        val field = column[0]
+        val uniqueValues = column.slice(1 until column.size).distinct()
+
+        // add unique codes to each field, ignoring BIDS default numerical fields
+        if (!listOf("duration", "onset", "sample", "stim_file", "HED", "response_time").contains(field)) {
+            fieldAndUniqueCodeMap[field] = uniqueValues.toList()
+            isValueField[field] = false
+        } else {
+            fieldAndUniqueCodeMap[field] = listOf("HED")
+            isValueField[field] = true
+        }
+        // initialize fieldMap
+        fieldMap[field] = HashMap()
+        addItem(field)
+
+    }
     fun addFieldFromDict(field:String, fieldDict: CTagger.BIDSFieldDict) {
         addItem(field)
         // add unique codes to each field, ignoring BIDS default numerical fields
