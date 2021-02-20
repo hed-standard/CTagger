@@ -25,6 +25,8 @@ class TaggerLauncher: JFrame() {
         val btnPanel = JPanel()
         val importTSVBtn = JButton("Import spreadsheet")
         importTSVBtn.addActionListener {
+            JOptionPane.showMessageDialog(this,
+                    "The first row of your spreadsheet should contain field names and each columns contains values of the field", "Warning", JOptionPane.WARNING_MESSAGE)
             val fc = JFileChooser()
             val fileChosen = fc.showOpenDialog(this)
             if (fileChosen == JFileChooser.APPROVE_OPTION) {

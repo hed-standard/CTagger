@@ -1,6 +1,7 @@
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import com.sun.xml.internal.fastinfoset.alphabet.BuiltInRestrictedAlphabets.table
 import com.univocity.parsers.tsv.TsvParser
 import com.univocity.parsers.tsv.TsvParserSettings
 import java.awt.*
@@ -101,6 +102,8 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         var submenu = JMenu("Import")
         var menuItem = JMenuItem("Import BIDS events.tsv file")
         menuItem.addActionListener {
+            JOptionPane.showMessageDialog(frame,
+                    "The first row of your spreadsheet should contain field names and each columns contains values of the field", "Warning", JOptionPane.WARNING_MESSAGE)
             val fc = JFileChooser()
             val fileChosen = fc.showOpenDialog(frame)
             if (fileChosen == JFileChooser.APPROVE_OPTION) {
@@ -444,8 +447,6 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             JOptionPane.showMessageDialog(frame, "Error importing BIDS _events.json", "Import error", JOptionPane.ERROR_MESSAGE)
         }
     }
-
-
 
     /**
      * For deserialization of events.json
