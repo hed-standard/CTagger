@@ -64,8 +64,9 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         addCenterPane(mainPane)
         addDoneBtn(mainPane)
 
-        frame.background = Style.BLUE_MEDIUM
-        mainPane.background = Style.BLUE_MEDIUM
+        // set default background color to all panels
+        UIManager.put("Panel.background", Style.BLUE_MEDIUM)
+        SwingUtilities.updateComponentTreeUI(frame)
         frame.pack()
         frame.isVisible = true
 
@@ -161,6 +162,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
     private fun addCenterPane(mainPane: Container) {
         val eventPane = JPanel()
         eventPane.layout = BoxLayout(eventPane, BoxLayout.PAGE_AXIS)
+        eventPane.add(JLabel("Event code"))
 //        val isValueCheckbox = JCheckBox("Check if value field")
 //        isValueCheckbox.addItemListener {
 //            if (it.stateChange == 1)
@@ -177,6 +179,9 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         eventCodePane.background = Style.BLUE_MEDIUM
         eventPane.add(eventCodePane)
 
+        val tagPane = JPanel()
+        tagPane.layout = BoxLayout(tagPane, BoxLayout.PAGE_AXIS)
+        tagPane.add(JLabel("HED tags"))
         inputPane.preferredSize = Dimension(500,300)
         hedTagInput = HedTagInput(this)
         hedTagInput.setBounds(0,0, 500,300)
@@ -193,15 +198,15 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         searchResultPanel.setBounds(0, 0, 480,150)
         searchResultPanel.location = Point(15,150)
         searchResultPanel.isVisible = false
-
         inputPane.add(tagInputPane)
-
-        val tagPane = JPanel(GridLayout(1,2))
-        tagPane.add(eventPane)
         tagPane.add(inputPane)
-        tagPane.background = Style.BLUE_MEDIUM
 
-        mainPane.add(tagPane, BorderLayout.CENTER)
+        val centerPane = JPanel(GridLayout(1,2))
+        centerPane.add(eventPane)
+        centerPane.add(tagPane)
+        centerPane.background = Style.BLUE_MEDIUM
+
+        mainPane.add(centerPane, BorderLayout.CENTER)
     }
 
     private fun addDoneBtn(mainPane: Container) {
