@@ -3,6 +3,9 @@ import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
+import java.io.StreamTokenizer
+import java.io.StringReader
+import java.text.BreakIterator
 import javax.swing.JTextPane
 import javax.swing.SwingUtilities
 import javax.swing.event.DocumentEvent
@@ -10,11 +13,13 @@ import javax.swing.event.DocumentListener
 import javax.swing.text.BadLocationException
 import javax.swing.text.SimpleAttributeSet
 import javax.swing.text.StyleConstants
+import javax.swing.text.Utilities
 import kotlin.text.Regex
 
 class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, KeyListener, MouseListener {
     private var isReplace = false
     private val validTagPattern = "\\w|\\+|\\^|-|\\s|\\d|/"
+    private var caretPos = 0
     init {
         document.addDocumentListener(this)
         addKeyListener(this)
@@ -29,24 +34,29 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
      *      2.2. If tag doesn't exist, hide result window (if on) and red highlight the word
      */
     override fun insertUpdate(e: DocumentEvent) {
-        val result = getWordAtPos(caretPosition)
-        if (result != null) {
+//        val result = Pair<Int,Int>(Utilities.getWordStart(this,caretPosition), Utilities.getWordEnd(this, caretPosition))
+        caretPos = caretPosition
+        val result = getTagAtPos(caretPosition)
 
+        if (result != null) {
             val isValid = tagger.hedValidator.validateEntry(text.substring(result.first, result.second))
             if (isValid) {
                 try {
-                    tagger.showSearchResultPane(x + 5, this.caret.magicCaretPosition.y + 25) // put the search result at the left most but under current caret
+                    tagger.showSearchResultPane(x + 5, y + 25) // put the search result at the left most but under current caret
                 }
                 catch (e: Exception) {
-
+                    print("Exception " + e.message)
+                    e.printStackTrace()
                 }
-                blackHighlight(result.first, result.second)
+//                blackHighlight(result.first, result.second)
 //                requestFocusInWindow()
-            } else {
+            }
+            else {
                 tagger.hideSearchResultPane()
-                redHighlight(result.first, result.second)
+//                redHighlight(result.first, result.second)
             }
         }
+
     }
 
     override fun changedUpdate(e: DocumentEvent) {
@@ -89,42 +99,33 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
         }
     }
 
-    private fun getWordAtPos(pos:Int): Pair<Int,Int>? {
+    private fun getTagAtPos(pos:Int): Pair<Int,Int>? {
         try {
-            // start with the last character. If beginning of doc, set to -1
-            var startPos = if (pos >= -1) pos else -1
-            startPos-- // consider the character right before the pos (due to the way caret indexing works)
-            // backtrack until an invalid character or end of text
-            val regex = Regex(validTagPattern)
-//            println(text)
-            while (startPos >= 0 && regex.matches(text[startPos].toString())) {
-                startPos--
+            var startPos = Utilities.getWordStart(this,pos)
+            while ((startPos > 0 && text[startPos] == '/') || (startPos > 1 && text[startPos-1] == '/')) {
+                var newPos = if (text[startPos] == '/') startPos else startPos-1
+                startPos = Utilities.getWordStart(this, newPos-1)
             }
-            // startPos is now at the invalid character or -1. Bring it forward to the correct location
-            startPos++
-
-            var endPos = startPos
-            // increase endPos until end of text or first invalid character
-            while (endPos < text.length && regex.matches(text[endPos].toString())) {
-                endPos++
-            }
-//            println(startPos)
-//            println(endPos)
-            return if (text.substring(startPos, endPos).isNullOrEmpty()) null else Pair(startPos, endPos) //text.substring(startPos,endPos) // substring stops at endPos-1
+            var endPos = pos
+//            println(text.substring(startPos,endPos))
+            if (text.substring(startPos,endPos) == ",")
+                return null
+            else
+                return Pair(startPos, pos)
         } catch (e: BadLocationException) {
             System.err.println(e)
+            return null
         }
-        return null
     }
 
     fun replaceWordAtCaretWithTag(selectedTag: String) {
         try {
-            val result = getWordAtPos(caretPosition-1)//findWordBeginning(caretPosition)
+            val result = getTagAtPos(caretPos)//findWordBeginning(caretPosition)
             if (result != null) {
                 val nodes = selectedTag.split('/') // short-form tag
                 select(result.first, result.second) // prepare for next statement
                 isReplace = true // tell removeUpdate to ignore
-                if (nodes.last() == "#") replaceSelection(" " + nodes[nodes.size - 2] + "/") else replaceSelection(" " + nodes.last() + ", ") //TODO need to account for whether takeValues is enforced
+                if (nodes.last() == "#") replaceSelection(nodes[nodes.size - 2] + "/") else replaceSelection(nodes.last()) //TODO need to account for whether takeValues is enforced
                 isReplace = false // replace done. Reset
                 grabFocus()
             }

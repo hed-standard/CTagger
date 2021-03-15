@@ -201,7 +201,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         searchResultPanel.setBounds(0, 0, 480,150)
         searchResultPanel.location = Point(15,150)
         searchResultPanel.isVisible = false
-        inputPane.add(tagInputPane)
+        inputPane.add(tagInputPane, 0)
         tagPane.add(inputPane)
 
         val centerPane = JPanel(GridLayout(1,2))
@@ -278,8 +278,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             searchResultPanel.revalidate()
             searchResultPanel.repaint()
             searchResultPanel.isVisible = true
-            inputPane.add(searchResultPanel)
-            inputPane.setLayer(searchResultPanel, 1)
+            inputPane.add(searchResultPanel, Integer(1),0)
             inputPane.repaint()
         }
     }
