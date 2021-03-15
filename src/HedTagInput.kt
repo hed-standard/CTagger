@@ -34,7 +34,6 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
      *      2.2. If tag doesn't exist, hide result window (if on) and red highlight the word
      */
     override fun insertUpdate(e: DocumentEvent) {
-//        val result = Pair<Int,Int>(Utilities.getWordStart(this,caretPosition), Utilities.getWordEnd(this, caretPosition))
         caretPos = caretPosition
         val result = getTagAtPos(caretPosition)
 

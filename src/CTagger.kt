@@ -65,8 +65,9 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         addCenterPane(mainPane)
         addDoneBtn(mainPane)
 
-        // set default background color to all panels
+        // set default background color to all panels and dialogs
         UIManager.put("Panel.background", Style.BLUE_MEDIUM)
+        UIManager.put("OptionPane.background", Style.BLUE_MEDIUM)
         SwingUtilities.updateComponentTreeUI(frame)
         frame.pack()
         frame.isVisible = true
