@@ -42,7 +42,8 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
             val isValid = tagger.hedValidator.validateEntry(text.substring(result.first, result.second))
             if (isValid) {
                 try {
-                    tagger.showSearchResultPane(x + 5, y + 25) // put the search result at the left most but under current caret
+                    val pos = modelToView(caretPosition)
+                    tagger.showSearchResultPane(pos.x-10, pos.y + 25) // put the search result at the left most but under current caret
                 }
                 catch (e: Exception) {
                     print("Exception " + e.message)
