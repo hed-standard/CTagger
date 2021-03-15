@@ -103,7 +103,7 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
     private fun getTagAtPos(pos:Int): Pair<Int,Int>? {
         try {
             var startPos = Utilities.getWordStart(this,pos)
-            while ((startPos > 0 && text[startPos] == '/') || (startPos > 1 && text[startPos-1] == '/')) {
+            while ((startPos > 0 && startPos < text.length && text[startPos] == '/') || (startPos > 1 && text[startPos-1] == '/')) {
                 var newPos = if (text[startPos] == '/') startPos else startPos-1
                 startPos = Utilities.getWordStart(this, newPos-1)
             }
