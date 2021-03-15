@@ -48,7 +48,7 @@ class SchemaView(val tagger: CTagger) : TreeSelectionListener {
         val nodeInfo = node.userObject
         if (nodeInfo.toString() != "HED") {
             val hedInputDoc = tagger.hedTagInput.document
-            hedInputDoc.insertString(hedInputDoc.length, "${nodeInfo}, ", null)
+            hedInputDoc.insertString(tagger.hedTagInput.caretPosition, "${nodeInfo}, ", null)
         }
     }
     // Parse HED XML
