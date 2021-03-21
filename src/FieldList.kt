@@ -42,13 +42,13 @@ class FieldList(val tagger: CTagger): JComboBox<String>() {
         addItem(field)
     }
 
-    fun addFieldFromColumn(column:Array<String>) {
+    fun addFieldFromColumn(column:Array<String>, isCategorical: Boolean) {
         // assuming first row contains field name
         val field = column[0]
         val uniqueValues = column.slice(1 until column.size).distinct()
 
         // add unique codes to each field, ignoring BIDS default numerical fields
-        if (!listOf("duration", "onset", "sample", "stim_file", "HED", "response_time").contains(field)) {
+        if (isCategorical) {
             fieldAndUniqueCodeMap[field] = uniqueValues.toList()
             isValueField[field] = false
         } else {

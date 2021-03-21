@@ -1,7 +1,6 @@
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
-import com.sun.xml.internal.fastinfoset.alphabet.BuiltInRestrictedAlphabets.table
 import com.univocity.parsers.tsv.TsvParser
 import com.univocity.parsers.tsv.TsvParserSettings
 import java.awt.*
@@ -12,6 +11,7 @@ import java.io.OutputStreamWriter
 import java.io.StringReader
 import java.lang.reflect.Type
 import javax.swing.*
+import javax.swing.border.EmptyBorder
 import javax.xml.bind.JAXBContext
 import kotlin.concurrent.timer
 
@@ -104,7 +104,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         var menuItem = JMenuItem("Import BIDS events.tsv file")
         menuItem.addActionListener {
             JOptionPane.showMessageDialog(frame,
-                    "The first row of your spreadsheet should contain field names and each columns contains values of the field", "Warning", JOptionPane.WARNING_MESSAGE)
+                    "The first row should contain event field names", "Warning", JOptionPane.WARNING_MESSAGE)
             val fc = JFileChooser()
             val fileChosen = fc.showOpenDialog(frame)
             if (fileChosen == JFileChooser.APPROVE_OPTION) {
@@ -166,7 +166,12 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
     private fun addCenterPane(mainPane: Container) {
         val eventPane = JPanel()
         eventPane.layout = BoxLayout(eventPane, BoxLayout.PAGE_AXIS)
-        eventPane.add(JLabel("Event code"))
+        val eventMenuPanel = JPanel(BorderLayout())
+        val eventPaneLabel = JLabel("Event code")
+        eventPaneLabel.border = EmptyBorder(0,10,0,0)
+        eventPaneLabel.foreground = Style.BLUE_DARK
+        eventMenuPanel.add(eventPaneLabel, BorderLayout.LINE_START)
+        eventPane.add(eventMenuPanel)
 //        val isValueCheckbox = JCheckBox("Check if value field")
 //        isValueCheckbox.addItemListener {
 //            if (it.stateChange == 1)
@@ -185,7 +190,17 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
 
         val tagPane = JPanel()
         tagPane.layout = BoxLayout(tagPane, BoxLayout.PAGE_AXIS)
-        tagPane.add(JLabel("HED tags"))
+        val tagMenuPanel = JPanel(BorderLayout())
+        val tagPanelLabel = JLabel("HED tags")
+        tagPanelLabel.border = EmptyBorder(0,10,0,0)
+        tagPanelLabel.foreground = Style.BLUE_DARK
+        tagMenuPanel.add(tagPanelLabel, BorderLayout.LINE_START)
+        val showSchemaBtn = JButton("Show HED schema")
+        showSchemaBtn.addActionListener {
+            schemaView.show()
+        }
+        tagMenuPanel.add(showSchemaBtn, BorderLayout.LINE_END)
+        tagPane.add(tagMenuPanel)
         inputPane.preferredSize = Dimension(500,300)
         hedTagInput = HedTagInput(this)
         hedTagInput.setBounds(0,0, 500,300)
@@ -391,27 +406,61 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             val parser = TsvParser(settings)
             // parse file as a collection of rows
             val allRows = parser.parseAll(file)
-            val eventFile= Array(allRows[0].size) { Array(allRows.size) { "" } }
-            for ((rowIndex, row) in allRows.withIndex()) {
-                for ((colIndex, col) in row.withIndex()) {
-                    eventFile[colIndex][rowIndex] = col
-                }
-            }
 
-            // parse successfully. Creating fields
-            // reset if not empty
-            if (!fieldList.isEmpty()) {
-                JOptionPane.showMessageDialog(frame, "Clearing old fields")
-                fieldList.clear()
+            // show dialog to verify categorical fields
+            var categoricalField = mutableListOf<String>()
+            var isCancelled = false
+            // create dialog
+            val dialog = JDialog(frame, "", true)
+            val pane = JPanel(BorderLayout())
+            pane.border = EmptyBorder(10, 10, 10, 10)
+            val label = JLabel("Select categorical event fields")
+            label.border = EmptyBorder(10,0,10,0)
+            pane.add(label, BorderLayout.PAGE_START)
+            val list = JList<String>(allRows[0])
+            pane.add(list, BorderLayout.CENTER)
+            val btnPane = JPanel()
+            val okBtn = JButton("Ok")
+            okBtn.addActionListener {
+                categoricalField = list.selectedValuesList
+                dialog.dispose()
             }
-            eventFile.forEach {
-                // add fields to combo box
-                fieldList.addFieldFromColumn(it)
+            val cancelBtn = JButton("Cancel")
+            cancelBtn.addActionListener{
+                dialog.dispose()
+                isCancelled = true
             }
-            // initialize tagging GUI
-            eventCodeList.codeSet = fieldList.fieldAndUniqueCodeMap[fieldList.selectedItem!!]!! // add codes of current field
-            eventCodeList.selectedIndex = 0 // select first code in the list
-            fieldList.repaint()
+            btnPane.add(okBtn)
+            btnPane.add(cancelBtn)
+            pane.add(btnPane, BorderLayout.PAGE_END)
+            dialog.contentPane = pane
+            dialog.pack()
+            dialog.isVisible = true
+
+            // user selected categorical fields. Proceed
+            if (!isCancelled) {
+                val eventFile = Array(allRows[0].size) { Array(allRows.size) { "" } }
+                for ((rowIndex, row) in allRows.withIndex()) {
+                    for ((colIndex, col) in row.withIndex()) {
+                        eventFile[colIndex][rowIndex] = col
+                    }
+                }
+
+                // parse successfully. Creating fields
+                // reset if not empty
+                if (!fieldList.isEmpty()) {
+                    JOptionPane.showMessageDialog(frame, "Clearing old fields")
+                    fieldList.clear()
+                }
+                eventFile.forEach { column ->
+                    // add fields to combo box
+                    fieldList.addFieldFromColumn(column, categoricalField.contains(column[0]))
+                }
+                // initialize tagging GUI
+                eventCodeList.codeSet = fieldList.fieldAndUniqueCodeMap[fieldList.selectedItem!!]!! // add codes of current field
+                eventCodeList.selectedIndex = 0 // select first code in the list
+                fieldList.repaint()
+            }
         }
         catch (e: Exception) {
             JOptionPane.showMessageDialog(frame, "Error importing BIDS _events.tsv", "Import error", JOptionPane.ERROR_MESSAGE)
