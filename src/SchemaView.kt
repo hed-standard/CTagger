@@ -1,11 +1,10 @@
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.Font
 import java.awt.Toolkit
 import java.io.StringReader
-import javax.swing.JFrame
-import javax.swing.JScrollPane
-import javax.swing.JTree
-import javax.swing.SwingUtilities
+import javax.swing.*
+import javax.swing.border.EmptyBorder
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.event.TreeSelectionListener
 import javax.swing.tree.DefaultMutableTreeNode
@@ -24,6 +23,12 @@ class SchemaView(val tagger: CTagger) : TreeSelectionListener {
 
         val mainPane = frame.contentPane
         mainPane.layout = BorderLayout()
+
+        val prompt = JLabel("Click on a tag to add to the annotation")
+        prompt.border = EmptyBorder(10,10,10,10)
+        prompt.font = Font("San Serif", Font.BOLD, 12)
+        prompt.foreground = Style.BLUE_DARK
+        mainPane.add(prompt, BorderLayout.PAGE_START)
         val root = DefaultMutableTreeNode("HED")
         getHedXmlModel(root)
 

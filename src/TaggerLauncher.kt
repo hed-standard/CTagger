@@ -23,7 +23,7 @@ class TaggerLauncher: JFrame() {
         mainPane.add(label, BorderLayout.NORTH)
 
         val btnPanel = JPanel()
-        val importTSVBtn = JButton("Import spreadsheet")
+        val importTSVBtn = JButton("Import BIDS event spreadsheet")
         importTSVBtn.addActionListener {
             JOptionPane.showMessageDialog(this,
                     "The first row should contain event field names", "Warning", JOptionPane.WARNING_MESSAGE)
@@ -35,7 +35,7 @@ class TaggerLauncher: JFrame() {
                 isVisible = false
             }
         }
-        val importJsonBtn = JButton("Import dictionary")
+        val importJsonBtn = JButton("Import BIDS event dictionary")
         importJsonBtn.addActionListener {
             val fc = JFileChooser()
             val fileChosen = fc.showOpenDialog(this)

@@ -128,20 +128,20 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         submenu.add(menuItem)
         menu.add(submenu)
 
-        menuItem = JMenuItem("Show BIDS format")
+        menuItem = JMenuItem("Review all tags")
         menuItem.addActionListener {
             showJsonWindow()
         }
         menu.add(menuItem)
 
         // View menu item
-        menu = JMenu("View")
-        menuBar.add(menu)
-        menuItem = JMenuItem("Show HED Schema")
-        menuItem.addActionListener {
-            schemaView.show()
-        }
-        menu.add(menuItem)
+//        menu = JMenu("View")
+//        menuBar.add(menu)
+//        menuItem = JMenuItem("Show HED Schema")
+//        menuItem.addActionListener {
+//            schemaView.show()
+//        }
+//        menu.add(menuItem)
 
         frame.setJMenuBar(menuBar)
     }
