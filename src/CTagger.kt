@@ -379,7 +379,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             val dialog = JDialog(frame, "", true)
             val pane = JPanel(BorderLayout())
             pane.border = EmptyBorder(10, 10, 10, 10)
-            val label = JLabel("Select categorical event fields")
+            val label = JLabel("Select categorical event fields (Hold Ctrl/Cmd for multiple selections)")
             label.border = EmptyBorder(10,0,10,0)
             pane.add(label, BorderLayout.PAGE_START)
             val list = JList<String>(allRows[0])
@@ -388,6 +388,8 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             val okBtn = JButton("Ok")
             okBtn.addActionListener {
                 categoricalField = list.selectedValuesList
+                if (categoricalField.isEmpty())
+                    JOptionPane.showMessageDialog(frame, "No field selected. Treating all fields as numerical fields.")
                 dialog.dispose()
             }
             val cancelBtn = JButton("Cancel")
