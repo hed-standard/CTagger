@@ -172,15 +172,6 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         eventPaneLabel.foreground = Style.BLUE_DARK
         eventMenuPanel.add(eventPaneLabel, BorderLayout.LINE_START)
         eventPane.add(eventMenuPanel)
-//        val isValueCheckbox = JCheckBox("Check if value field")
-//        isValueCheckbox.addItemListener {
-//            if (it.stateChange == 1)
-//                setValueField(fieldCB.selectedItem.toString())
-//            else
-//                unsetValueField(fieldCB.selectedItem.toString())
-//        }
-//        eventPane.add(isValueCheckbox)
-
         val eventCodePane = JScrollPane(eventCodeList)
         eventCodePane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
         eventCodePane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
@@ -298,32 +289,6 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             inputPane.repaint()
         }
     }
-
-//    fun setValueField(field: String) {
-//        isValueField[field] = true
-//        if (field in fieldAndUniqueCodeMap) {
-//            oldFieldAndUniqueCodeMap[field] = fieldAndUniqueCodeMap[field]!!
-//            fieldAndUniqueCodeMap[field] = listOf("HED")
-//            eventCodeList.codeSet = fieldAndUniqueCodeMap[field]!!
-//        }
-//        if (field in fieldMap) {
-//            fieldMap[field]!!.clear()
-//            fieldMap[field]!!["HED"] = ""
-//        }
-//    }
-//    fun unsetValueField(field: String) {
-//        if (field in isValueField && isValueField[field]!!) {
-//            isValueField[field] = false
-//            if (field in oldFieldAndUniqueCodeMap) {
-//                fieldAndUniqueCodeMap[field] = oldFieldAndUniqueCodeMap[field]!!
-//                eventCodeList.codeSet = fieldAndUniqueCodeMap[field]!!
-//                if (field in fieldMap) {
-//                    fieldMap[field]!!.clear()
-//                    fieldAndUniqueCodeMap[field]!!.forEach{fieldMap[field]!![it] = ""}
-//                }
-//            }
-//        }
-//    }
 
     /**
      * Export field map (fMap) to json accordingly to HED-BIDS specification
