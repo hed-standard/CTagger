@@ -50,7 +50,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             importBIDSEventJson(File(TestUtilities.ScratchJsonFileName))
         }
 
-        frame.setSize(800, 800)
+        frame.setSize(1000, 800)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         val dim = Toolkit.getDefaultToolkit().screenSize
         frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
@@ -70,6 +70,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         UIManager.put("OptionPane.background", Style.BLUE_MEDIUM)
         SwingUtilities.updateComponentTreeUI(frame)
         frame.pack()
+        frame.isResizable = false
         frame.isVisible = true
 
         // start saving thread
@@ -129,7 +130,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
 
         menuItem = JMenuItem("Show BIDS format")
         menuItem.addActionListener {
-            showJsonWindow(isBIDS = true)
+            showJsonWindow()
         }
         menu.add(menuItem)
 
@@ -147,16 +148,12 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
 
     private fun addFieldSelectionPane(mainPane: Container) {
         val fieldSelectionPane = JPanel(FlowLayout())
-        fieldSelectionPane.add(JLabel("Tagging field: "))
+        val fieldSelectionPaneLabel = JLabel("Tagging field: ")
+        fieldSelectionPane.add(fieldSelectionPaneLabel)
+        fieldSelectionPaneLabel.foreground = Style.BLUE_DARK
+        fieldSelectionPaneLabel.font = Font("Sans Serif", Font.BOLD, 12)
         fieldList.initializeListener()
         fieldSelectionPane.add(fieldList)
-        val addFieldBtn = JButton("Create new field")
-        addFieldBtn.addActionListener {
-            val field = JOptionPane.showInputDialog("New field name")
-            if (field.isNotEmpty()) fieldList.addField(field)
-        }
-        fieldSelectionPane.add(addFieldBtn)
-        fieldSelectionPane.background = Style.BLUE_MEDIUM
         mainPane.add(fieldSelectionPane, BorderLayout.NORTH)
     }
 
@@ -164,57 +161,78 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
      * Add Event code and tag Input panes
      */
     private fun addCenterPane(mainPane: Container) {
-        val eventPane = JPanel()
-        eventPane.layout = BoxLayout(eventPane, BoxLayout.PAGE_AXIS)
-        val eventMenuPanel = JPanel(BorderLayout())
+        val centerPane = JPanel(GridBagLayout())
+        var c = GridBagConstraints()
+        c.gridx = 0
+        c.gridy = 0
+        c.gridwidth = 2
+        c.anchor = GridBagConstraints.LINE_START
         val eventPaneLabel = JLabel("Event code")
         eventPaneLabel.border = EmptyBorder(0,10,0,0)
         eventPaneLabel.foreground = Style.BLUE_DARK
-        eventMenuPanel.add(eventPaneLabel, BorderLayout.LINE_START)
-        eventPane.add(eventMenuPanel)
+        eventPaneLabel.font = Font("Sans Serif", Font.BOLD, 12)
+        centerPane.add(eventPaneLabel, c)
+
+        c = GridBagConstraints()
+        c.fill = GridBagConstraints.HORIZONTAL
+        c.gridx = 0
+        c.gridy = 1
+        c.gridwidth = 2
+        c.weightx = 0.5
+        c.insets = Insets(0,10,0,0)
         val eventCodePane = JScrollPane(eventCodeList)
         eventCodePane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
         eventCodePane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        eventCodePane.preferredSize = Dimension(300,300)
+        eventCodePane.preferredSize = Dimension(500,300)
         eventCodePane.background = Style.BLUE_MEDIUM
-        eventPane.add(eventCodePane)
+        centerPane.add(eventCodePane, c)
 
-        val tagPane = JPanel()
-        tagPane.layout = BoxLayout(tagPane, BoxLayout.PAGE_AXIS)
-        val tagMenuPanel = JPanel(BorderLayout())
+        c = GridBagConstraints()
+        c.gridx = 2
+        c.gridy = 0
+        c.gridwidth = 1
+        c.anchor = GridBagConstraints.LINE_START
         val tagPanelLabel = JLabel("HED tags")
+        tagPanelLabel.font = Font("Sans Serif", Font.BOLD, 12)
         tagPanelLabel.border = EmptyBorder(0,10,0,0)
         tagPanelLabel.foreground = Style.BLUE_DARK
-        tagMenuPanel.add(tagPanelLabel, BorderLayout.LINE_START)
+        centerPane.add(tagPanelLabel)
+
+        c = GridBagConstraints()
+        c.gridx = 3
+        c.gridy = 0
+        c.gridwidth = 3
+        c.anchor = GridBagConstraints.LINE_END
         val showSchemaBtn = JButton("Show HED schema")
         showSchemaBtn.addActionListener {
             schemaView.show()
         }
-        tagMenuPanel.add(showSchemaBtn, BorderLayout.LINE_END)
-        tagPane.add(tagMenuPanel)
-        inputPane.preferredSize = Dimension(500,300)
+        centerPane.add(showSchemaBtn, c)
+
+        c = GridBagConstraints()
+        c.fill = GridBagConstraints.HORIZONTAL
+        c.gridx = 2
+        c.gridy = 1
+        c.gridwidth = 4
+        c.weightx = 1.0
+        c.insets = Insets(0,0,0,5)
+        inputPane.layout = FlowLayout()
         hedTagInput = HedTagInput(this)
-        hedTagInput.setBounds(0,0, 500,300)
-        val tagInputPane = JScrollPane(hedTagInput)
-        tagInputPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER // Force wrapping. Deduced from: http://java-sl.com/wrap.html
-        tagInputPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        tagInputPane.setBounds(0,0,500,300)
-        tagInputPane.location = Point(0,0)
+        hedTagInput.preferredSize = Dimension(500,300)
+        val tagInputPaneScrollPane = JScrollPane(hedTagInput)
+        tagInputPaneScrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER // Force wrapping. Deduced from: http://java-sl.com/wrap.html
+        tagInputPaneScrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
+        tagInputPaneScrollPane.location = Point(0,0)
+        inputPane.add(tagInputPaneScrollPane, 0)
+        centerPane.add(inputPane, c)
 
         hedTagList = HedTagList(this, tags, hedTagInput)
         searchResultPanel = JScrollPane(hedTagList)
         searchResultPanel.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
         searchResultPanel.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
         searchResultPanel.setBounds(0, 0, 480,150)
-        searchResultPanel.location = Point(15,150)
+        searchResultPanel.location = Point(30,150)
         searchResultPanel.isVisible = false
-        inputPane.add(tagInputPane, 0)
-        tagPane.add(inputPane)
-
-        val centerPane = JPanel(GridLayout(1,2))
-        centerPane.add(eventPane)
-        centerPane.add(tagPane)
-        centerPane.background = Style.BLUE_MEDIUM
 
         mainPane.add(centerPane, BorderLayout.CENTER)
     }
@@ -222,13 +240,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
     private fun addDoneBtn(mainPane: Container) {
         val doneBtn = JButton("Done")
         doneBtn.addActionListener {
-            showJsonWindow(isBIDS = false)
-//            val finalJson = prettyPrintJson(exportBIDSJson(fieldMap))
-//            println(finalJson)
-//            JOptionPane.showMessageDialog(frame,
-//                    finalJson,
-//                    "HED tag final JSON string",
-//                    JOptionPane.PLAIN_MESSAGE)
+            showJsonWindow()
             frame.dispatchEvent(WindowEvent(frame, WindowEvent.WINDOW_CLOSING))
         }
 
@@ -294,16 +306,14 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
      * Export field map (fMap) to json accordingly to HED-BIDS specification
      * https://bids-specification.readthedocs.io/en/stable/99-appendices/03-hed.html#appendix-iii-hierarchical-event-descriptors
      */
-    fun exportToJson(fMap: HashMap<String, HashMap<String,String>>, isBIDS: Boolean = false): HashMap<String, Any> {
+    fun exportToJson(fMap: HashMap<String, HashMap<String,String>>): HashMap<String, Any> {
         val jsonFieldMap = HashMap<String, Any>()
         fMap.forEach {
             // value type, ignoring empty fields
             if (fieldList.isValueField.containsKey(it.key) && fieldList.isValueField[it.key]!! && it.value.containsKey("HED") && it.value["HED"]!!.isNotEmpty())
-                if (isBIDS)
-                    jsonFieldMap[it.key] = hashMapOf(Pair("HED", it.value["HED"]!!))
-                else
-                jsonFieldMap[it.key] = it.value["HED"]!!
-            else { // categories
+                jsonFieldMap[it.key] = hashMapOf(Pair("HED", it.value["HED"]!!))
+            // categorical fields
+            else {
                 val finalMap = HashMap<String, String>()
                 it.value.forEach { map ->
                     // ignore empty codes
@@ -315,10 +325,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
                     }
                 }
                 if (finalMap.isNotEmpty())
-                    if (isBIDS)
-                        jsonFieldMap[it.key] = hashMapOf(Pair("HED", finalMap))
-                    else
-                        jsonFieldMap[it.key] = finalMap
+                    jsonFieldMap[it.key] = hashMapOf(Pair("HED", finalMap))
             }
         }
         return jsonFieldMap
@@ -328,8 +335,8 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         return gson.toJson(fieldMap)
     }
 
-    private fun showJsonWindow(isBIDS: Boolean) {
-        val json = prettyPrintJson(exportToJson(fieldList.fieldMap, isBIDS = isBIDS))
+    private fun showJsonWindow() {
+        val json = prettyPrintJson(exportToJson(fieldList.fieldMap))
         val textarea = JTextArea(10,20)
         textarea.text = json
         textarea.isEditable = false
@@ -339,10 +346,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         // if save to file selected
         if (result == 0) {
             val fileChooser = JFileChooser()
-            if (isBIDS)
-                fileChooser.selectedFile = File("_events.json")
-            else
-                fileChooser.selectedFile = File(".json")
+            fileChooser.selectedFile = File("_events.json")
             val retval = fileChooser.showSaveDialog(frame)
             if (retval == JFileChooser.APPROVE_OPTION) {
                 var file = fileChooser.selectedFile ?: return

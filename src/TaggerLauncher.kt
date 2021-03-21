@@ -26,7 +26,7 @@ class TaggerLauncher: JFrame() {
         val importTSVBtn = JButton("Import spreadsheet")
         importTSVBtn.addActionListener {
             JOptionPane.showMessageDialog(this,
-                    "The first row of your spreadsheet should contain field names and each columns contains values of the field", "Warning", JOptionPane.WARNING_MESSAGE)
+                    "The first row should contain event field names", "Warning", JOptionPane.WARNING_MESSAGE)
             val fc = JFileChooser()
             val fileChosen = fc.showOpenDialog(this)
             if (fileChosen == JFileChooser.APPROVE_OPTION) {
@@ -58,6 +58,9 @@ class TaggerLauncher: JFrame() {
 
         mainPane.add(btnPanel, BorderLayout.CENTER)
 
+        UIManager.put("Panel.background", Style.BLUE_MEDIUM)
+        UIManager.put("OptionPane.background", Style.BLUE_MEDIUM)
+        SwingUtilities.updateComponentTreeUI(this)
         background = Style.BLUE_MEDIUM
         mainPane.background = Style.BLUE_MEDIUM
         pack()
