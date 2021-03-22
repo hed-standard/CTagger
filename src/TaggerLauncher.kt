@@ -6,7 +6,7 @@ import javax.swing.*
 import javax.swing.border.EmptyBorder
 
 fun main() {
-    SwingUtilities.invokeLater { TaggerLauncher() }
+    TaggerLauncher()
 }
 class TaggerLauncher: JFrame() {
     init {
@@ -25,8 +25,6 @@ class TaggerLauncher: JFrame() {
         val btnPanel = JPanel()
         val importTSVBtn = JButton("Import BIDS event spreadsheet")
         importTSVBtn.addActionListener {
-            JOptionPane.showMessageDialog(this,
-                    "The first row should contain event field names", "Warning", JOptionPane.WARNING_MESSAGE)
             val fc = JFileChooser()
             val fileChosen = fc.showOpenDialog(this)
             if (fileChosen == JFileChooser.APPROVE_OPTION) {
@@ -68,4 +66,5 @@ class TaggerLauncher: JFrame() {
         setLocation(dim.width / 2 - size.width / 2, dim.height / 2 - size.height / 2)
         isVisible = true
     }
+
 }

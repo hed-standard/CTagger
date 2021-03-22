@@ -48,7 +48,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             importBIDSEventJson(File(filename))
         else {
             isScratch = true
-            importBIDSEventJson(File(TestUtilities.ScratchJsonFileName))
+            importBIDSEventJson("{'none': {}}")
         }
 
         frame.setSize(1000, 800)
@@ -104,8 +104,6 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         var submenu = JMenu("Import")
         var menuItem = JMenuItem("Import BIDS events.tsv file")
         menuItem.addActionListener {
-            JOptionPane.showMessageDialog(frame,
-                    "The first row should contain event field names", "Warning", JOptionPane.WARNING_MESSAGE)
             val fc = JFileChooser()
             val fileChosen = fc.showOpenDialog(frame)
             if (fileChosen == JFileChooser.APPROVE_OPTION) {
@@ -144,15 +142,6 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             showJsonWindow()
         }
         menu.add(menuItem)
-
-        // View menu item
-//        menu = JMenu("View")
-//        menuBar.add(menu)
-//        menuItem = JMenuItem("Show HED Schema")
-//        menuItem.addActionListener {
-//            schemaView.show()
-//        }
-//        menu.add(menuItem)
 
         frame.setJMenuBar(menuBar)
     }
@@ -214,6 +203,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         c.gridy = 0
         c.gridwidth = 3
         c.anchor = GridBagConstraints.LINE_END
+        c.insets = Insets(0,10,0,10)
         val showSchemaBtn = JButton("Show HED schema")
         showSchemaBtn.addActionListener {
             schemaView.show()
@@ -409,7 +399,10 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             label.border = EmptyBorder(10,0,10,0)
             pane.add(label, BorderLayout.PAGE_START)
             val list = JList<String>(allRows[0])
-            pane.add(list, BorderLayout.CENTER)
+            val scrollableList = JScrollPane(list)
+            scrollableList.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+            scrollableList.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
+            pane.add(scrollableList, BorderLayout.CENTER)
             val btnPane = JPanel()
             val okBtn = JButton("Ok")
             okBtn.addActionListener {
@@ -428,6 +421,8 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             pane.add(btnPane, BorderLayout.PAGE_END)
             dialog.contentPane = pane
             dialog.pack()
+            val dim = Toolkit.getDefaultToolkit().screenSize
+            dialog.setLocation(dim.width / 2 - dialog.size.width / 2, dim.height / 2 - dialog.size.height / 2) // put center of screen
             dialog.isVisible = true
 
             // user selected categorical fields. Proceed
@@ -456,7 +451,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             }
         }
         catch (e: Exception) {
-            JOptionPane.showMessageDialog(frame, "Error importing BIDS _events.tsv", "Import error", JOptionPane.ERROR_MESSAGE)
+            JOptionPane.showMessageDialog(frame, "Error importing BIDS _events.tsv. Make sure that your file is BIDS compliant.", "Import error", JOptionPane.ERROR_MESSAGE)
         }
     }
     /**
@@ -486,12 +481,37 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             fieldList.repaint()
         }
         catch (e: Exception) {
-            JOptionPane.showMessageDialog(frame, "Error importing BIDS _events.json", "Import error", JOptionPane.ERROR_MESSAGE)
+            JOptionPane.showMessageDialog(frame, "Error importing BIDS _events.json. Make sure that your file is BIDS compliant", "Import error", JOptionPane.ERROR_MESSAGE)
         }
     }
 
+    private fun importBIDSEventJson(json: String) {
+        try {
+            val type: Type = object : TypeToken<HashMap<String?, BIDSFieldDict>?>() {}.type
+            val gson = Gson()
+            val result: HashMap<String, BIDSFieldDict> = gson.fromJson(json, type)
+            println(result)
+            // reset if not empty
+            if (!fieldList.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Clearing old fields")
+                fieldList.clear()
+            }
+            result.forEach {
+                // assuming that first row contains field names as BIDS TSV
+                // add fields to combo box
+                fieldList.addFieldFromDict(it.key.toLowerCase(), it.value)
+            }
+            // initialize/update tagging GUI
+            eventCodeList.codeSet = fieldList.fieldAndUniqueCodeMap[fieldList.selectedItem!!]!! // add codes of current field
+            eventCodeList.selectedIndex = 0 // select first code in the list
+            fieldList.repaint()
+        }
+        catch (e: Exception) {
+            JOptionPane.showMessageDialog(frame, "Error importing BIDS _events.json", "Import error", JOptionPane.ERROR_MESSAGE)
+        }
+    }
     /**
-     * For deserialization of events.json
+     * For deserialization of json
      */
     class BIDSFieldDict{
         var LongName:String = ""

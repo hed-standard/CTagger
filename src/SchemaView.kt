@@ -53,7 +53,7 @@ class SchemaView(private val tagger: CTagger, hedRoot: TagModel) : TreeSelection
         val nodeInfo = node.userObject
         if (nodeInfo.toString() != "HED") {
             val hedInputDoc = tagger.hedTagInput.document
-            hedInputDoc.insertString(tagger.hedTagInput.caretPosition, "${nodeInfo}, ", null)
+            hedInputDoc.insertString(tagger.hedTagInput.caretPosition, "${if (nodeInfo.toString() == "#") node.parent.toString()+"/" else nodeInfo}, ", null)
         }
     }
 
