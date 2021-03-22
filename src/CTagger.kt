@@ -10,6 +10,7 @@ import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.io.StringReader
 import java.lang.reflect.Type
+import java.net.URL
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 import javax.xml.bind.JAXBContext
@@ -27,14 +28,14 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
     lateinit var unitClasses: Set<UnitClassXmlModel>
     lateinit var unitModifiers: ArrayList<UnitModifierXmlModel>
     val tags: MutableList<String> = mutableListOf()
-    private val schema: HashMap<String, TagModel> = HashMap()
+    val schema: HashMap<String, TagModel> = HashMap()
     lateinit var hedValidator: HedValidator
     val fieldList = FieldList(this)
     var eventCodeList: EventCodeList
     lateinit var hedTagInput: HedTagInput
     lateinit var hedTagList: HedTagList
     lateinit var searchResultPanel: JScrollPane
-    private var schemaView: SchemaView
+    lateinit var schemaView: SchemaView
     private val inputPane = JLayeredPane()
 
     init {
@@ -55,7 +56,6 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         val dim = Toolkit.getDefaultToolkit().screenSize
         frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
 
-        schemaView = SchemaView(this)
 
         val mainPane = frame.contentPane
         mainPane.layout = BorderLayout()
@@ -248,8 +248,10 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
     }
 
     // Parse HED XML
-    private fun getHedXmlModel() {
-        val xmlData = TestUtilities.getResourceAsString(TestUtilities.HedFileName)
+    private fun getHedXmlModel(version:String = "HED8.0.0-alpha.1") {
+        val schemaLink = URL("https://raw.githubusercontent.com/hed-standard/hed-specification/master/hedxml/${version}.xml")
+        val xmlData = schemaLink.readText()
+//        val xmlData = TestUtilities.getResourceAsString(TestUtilities.HedFileName)
         val hedXmlModel: HedXmlModel
         try {
             val context = JAXBContext.newInstance(HedXmlModel::class.java)
@@ -261,17 +263,20 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         }
         unitClasses = hedXmlModel.unitClasses.unitClasses
         unitModifiers = hedXmlModel.unitModifiers.unitModifiers
-        populateTagSets("", hedXmlModel.tags, false)
+        val hedRoot = TagModel("",null, null)
+        populateTagSets(hedRoot, hedXmlModel.tags, false)
         hedValidator = HedValidator(schema, this)
+        schemaView = SchemaView(this, hedRoot)
     }
 
     // Add tags recursively
-    private fun populateTagSets(path: String, tagSets: Set<TagXmlModel>, parentExtensionAllowed: Boolean) {
+    private fun populateTagSets(parent: TagModel, tagSets: Set<TagXmlModel>, parentExtensionAllowed: Boolean) {
         for (tagXmlModel: TagXmlModel in tagSets) {
             if (parentExtensionAllowed)
                 tagXmlModel.isExtensionAllowed = parentExtensionAllowed
-            val tagPath = path + tagXmlModel.name
-            val tagModel = TagModel(tagPath, tagXmlModel)
+            val tagPath = "${parent.fullPath}/${tagXmlModel.name}"
+            val tagModel = TagModel(tagPath, parent, tagXmlModel)
+            parent.children.add(tagModel)
             val nodes = tagPath.split('/')
             for (i in nodes.size-1 downTo 0) {
                 val path = nodes.subList(i, nodes.size).joinToString("/")
@@ -279,7 +284,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
                     schema[path] = tagModel
             }
             tags.add(tagPath)
-            populateTagSets("$tagPath/", tagXmlModel.tags, tagXmlModel.isExtensionAllowed)
+            populateTagSets(tagModel, tagXmlModel.tags, tagXmlModel.isExtensionAllowed)
         }
     }
 

@@ -12,7 +12,7 @@ import javax.swing.tree.DefaultTreeCellRenderer
 import javax.xml.bind.JAXBContext
 
 
-class SchemaView(val tagger: CTagger) : TreeSelectionListener {
+class SchemaView(private val tagger: CTagger, hedRoot: TagModel) : TreeSelectionListener {
     var tree : JTree
     val frame = JFrame("HED Schema ${tagger.hedVersion}")
     init {
@@ -30,7 +30,7 @@ class SchemaView(val tagger: CTagger) : TreeSelectionListener {
         prompt.foreground = Style.BLUE_DARK
         mainPane.add(prompt, BorderLayout.PAGE_START)
         val root = DefaultMutableTreeNode("HED")
-        getHedXmlModel(root)
+        populateTagSets(root, hedRoot.children)
 
         tree = JTree(root)
         tree.addTreeSelectionListener(this)
@@ -49,34 +49,20 @@ class SchemaView(val tagger: CTagger) : TreeSelectionListener {
     }
 
     override fun valueChanged(e: TreeSelectionEvent?) {
-        val node = tree.getLastSelectedPathComponent() as DefaultMutableTreeNode
+        val node = tree.lastSelectedPathComponent as DefaultMutableTreeNode
         val nodeInfo = node.userObject
         if (nodeInfo.toString() != "HED") {
             val hedInputDoc = tagger.hedTagInput.document
             hedInputDoc.insertString(tagger.hedTagInput.caretPosition, "${nodeInfo}, ", null)
         }
     }
-    // Parse HED XML
-    private fun getHedXmlModel(root: DefaultMutableTreeNode) {
-        val xmlData = TestUtilities.getResourceAsString(TestUtilities.HedFileName)
-        val hedXmlModel: HedXmlModel
-        try {
-            val context = JAXBContext.newInstance(HedXmlModel::class.java)
-            hedXmlModel = context.createUnmarshaller().unmarshal(StringReader(xmlData)) as HedXmlModel
-            println(hedXmlModel.version)
-        }
-        catch(e: Exception) {
-            throw RuntimeException("Unable to read XML data: " + e.message)
-        }
-        populateTagSets(root, hedXmlModel.tags)
-    }
 
-    // Add tags recursively
-    private fun populateTagSets(parent: DefaultMutableTreeNode, tagSets: Set<TagXmlModel>) {
-        for (tagXmlModel: TagXmlModel in tagSets) {
-            val curNode = DefaultMutableTreeNode(tagXmlModel.name)
+    // Add tags to tree recursively
+    private fun populateTagSets(parent: DefaultMutableTreeNode, tagSets: List<TagModel>) {
+        for (tagModel: TagModel in tagSets) {
+            val curNode = DefaultMutableTreeNode(tagModel.name)
             parent.add(curNode)
-            populateTagSets(curNode, tagXmlModel.tags)
+            populateTagSets(curNode, tagModel.children)
         }
     }
 
