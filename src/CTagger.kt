@@ -124,9 +124,20 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             }
         }
         submenu.add(menuItem)
-        menuItem = JMenuItem("Import tag file")
-        submenu.add(menuItem)
         menu.add(submenu)
+
+        menuItem = JMenuItem("Change schema version")
+        menuItem.addActionListener {
+            val schemaList = URL("https://api.github.com/repos/hed-standard/hed-specification/contents/hedxml").readText()
+            val sType = object : TypeToken<Array<SchemaListObject>>() { }.type
+            val listObject: Array<SchemaListObject> = Gson().fromJson(schemaList, sType)
+            val hedVersions =mutableListOf<String>()
+            listObject.forEach{ hedVersions.add(it.name.replace(".xml","")) }
+            val selection = JOptionPane.showInputDialog(frame, "Choose new schema version:", "", JOptionPane.PLAIN_MESSAGE, null, hedVersions.toTypedArray(), "HED8.0.0-alpha.1")
+            getHedXmlModel(selection.toString())
+        }
+        menu.add(menuItem)
+
 
         menuItem = JMenuItem("Review all tags")
         menuItem.addActionListener {
@@ -151,7 +162,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         val fieldSelectionPaneLabel = JLabel("Tagging field: ")
         fieldSelectionPane.add(fieldSelectionPaneLabel)
         fieldSelectionPaneLabel.foreground = Style.BLUE_DARK
-        fieldSelectionPaneLabel.font = Font("Sans Serif", Font.BOLD, 12)
+        fieldSelectionPaneLabel.font = Font("Sans Serif", Font.BOLD, 14)
         fieldList.initializeListener()
         fieldSelectionPane.add(fieldList)
         mainPane.add(fieldSelectionPane, BorderLayout.NORTH)
@@ -170,7 +181,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         val eventPaneLabel = JLabel("Event code")
         eventPaneLabel.border = EmptyBorder(0,10,0,0)
         eventPaneLabel.foreground = Style.BLUE_DARK
-        eventPaneLabel.font = Font("Sans Serif", Font.BOLD, 12)
+        eventPaneLabel.font = Font("Sans Serif", Font.BOLD, 14)
         centerPane.add(eventPaneLabel, c)
 
         c = GridBagConstraints()
@@ -193,7 +204,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         c.gridwidth = 1
         c.anchor = GridBagConstraints.LINE_START
         val tagPanelLabel = JLabel("HED tags")
-        tagPanelLabel.font = Font("Sans Serif", Font.BOLD, 12)
+        tagPanelLabel.font = Font("Sans Serif", Font.BOLD, 14)
         tagPanelLabel.border = EmptyBorder(0,10,0,0)
         tagPanelLabel.foreground = Style.BLUE_DARK
         centerPane.add(tagPanelLabel)
@@ -247,11 +258,14 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         mainPane.add(doneBtn, BorderLayout.SOUTH)
     }
 
-    // Parse HED XML
+    /**
+     * Parse HED schema from hed-standard/hed-specification
+     * and build schema model
+     * @param version   Version of the schema
+     */
     private fun getHedXmlModel(version:String = "HED8.0.0-alpha.1") {
         val schemaLink = URL("https://raw.githubusercontent.com/hed-standard/hed-specification/master/hedxml/${version}.xml")
         val xmlData = schemaLink.readText()
-//        val xmlData = TestUtilities.getResourceAsString(TestUtilities.HedFileName)
         val hedXmlModel: HedXmlModel
         try {
             val context = JAXBContext.newInstance(HedXmlModel::class.java)
@@ -269,6 +283,9 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         schemaView = SchemaView(this, hedRoot)
     }
 
+    /**
+     *
+     */
     // Add tags recursively
     private fun populateTagSets(parent: TagModel, tagSets: Set<TagXmlModel>, parentExtensionAllowed: Boolean) {
         for (tagXmlModel: TagXmlModel in tagSets) {
@@ -483,7 +500,23 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         var Units:String = ""
         var HED:Any = ""
     }
-
+    class LinkObject {
+        var self: String = ""
+        var git: String = ""
+        var html: String = ""
+    }
+    class SchemaListObject {
+        var name:String = ""
+        var path:String = ""
+        var sha:String = ""
+        var size:Int = 0
+        var url:String = ""
+        var html_url = ""
+        var git_url = ""
+        var download_url = ""
+        var type = ""
+        var _links: CTagger.LinkObject? = null
+    }
 
 }
 
