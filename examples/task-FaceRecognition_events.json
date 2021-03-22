@@ -1,0 +1,76 @@
+{
+  "HED": {
+    "Description": "Hierarchical Event Descriptor"
+  },
+  "onset": {
+    "Description": "Event onset",
+    "Units": "miliseconds"
+  },
+  "stim_file": {
+    "Description": "File of image presented. For button pressing events no info is provided (designated by [])"
+  },
+  "trial_type": {
+    "Description": "Comprenhesive information of stimulus and responses corresponding to each event",
+    "Levels": {
+      "famous_new": "Initial presentation of famous face",
+      "famous_second_early": "Immediate repeated  presentation of famous face",
+      "famous_second_late": "Delayed repeated  presentation of famous face",
+      "scrambled_new": "Initial presentation of scrambled face",
+      "scrambled_second_early": "Immediate repeated  presentation of scrambled face",
+      "scrambled_second_late": "Delayed repeated  presentation of scrambled face",
+      "unfamiliar_new": "Initial presentation of unfamiliar face",
+      "unfamiliar_second_early": "Immediate repeated  presentation of unfamiliar face",
+      "unfamiliar_second_late": "Delayed repeated  presentation of unfamiliar face",
+      "right_nonsym": "Right button press to indicated less symmetric face",
+      "left_sym": "Left button press to indicated more symmetric face",
+      "left_nonsym": "Left button press to indicated less symmetric face",
+      "right_sym": "Right button press to indicated more symmetric face",
+      "boundary": "The boundary mark of each run as the run data was merged",
+      "famous": "Famous or fami;iar face",
+      "unfamiliar": "Unfamiliar face",
+      "scrambled": "Scrambled face"
+    }
+  },
+  "event_type": {
+    "Description": "Represent the two more general types events in the experiment",
+    "Levels": {
+      "button_press": "Button pressing indicating level of symmetry of face presented",
+      "faces": "Face image presentation"
+    }
+  },
+  "face_type": {
+    "Description": "Type of face presented"
+  },
+  "value": {
+    "Description": "Numerical event marker",
+    "Levels": {
+      "5": "Initial presentation of famous face",
+      "6": "Immediate repeated  presentation of famous face",
+      "7": "Delayed repeated  presentation of famous face",
+      "13": "Initial presentation of unfamiliar face",
+      "14": "Immediate repeated  presentation of unfamiliar face",
+      "15": "Delayed repeated  presentation of unfamiliar face",
+      "17": "Initial presentation of scrambled face",
+      "18": "Immediate repeated  presentation of scrambled face",
+      "19": "Delayed repeated  presentation of scrambled face",
+      "256": "Left button press",
+      "4096": "Right button press"
+    }
+  },
+  "event_order": {
+    "Description": "Each image is presented twice. This index represent the order of presentation of each image",
+    "Levels": {
+      "0": "Not an image. This may be a button press or a boundary",
+      "1": "First presentation of the image",
+      "2": "Second presentation of the image"
+    }
+  },
+  "trial_dist": {
+    "Description": "Distance in trial units since the previous presentation of the same image",
+    "Units": "Trials"
+  },
+  "time_dist": {
+    "Description": "Time since the previous presentation of the same image",
+    "Units": "seconds"
+  }
+}
