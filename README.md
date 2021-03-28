@@ -11,6 +11,7 @@ Launching CTagger will bring up the welcome interface. Users have three options 
 * **Import BIDS event spreadsheet**: import event structure from BIDS events.tsv file 
 * **Import BIDS event dictionary**: import event structure from BIDS events.json file
 * **Quick tagging**: construct HED string independent from an event structure
+![tagger-launcher](images/CTaggerLauncher.png)
 
 For more guides and tutorials, check out the [Wiki](https://github.com/hed-standard/CTagger/wiki) page.
 
