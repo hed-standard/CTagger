@@ -6,3 +6,5 @@ CTagger GUI for annotating datasets using Hierarchical Event Descriptors
 * Then download the [CTagger.jar](https://github.com/hed-standard/CTagger/raw/main/CTagger.jar).
 * Double click on CTagger.jar to run. If you're on macOS you might need to update your Security settings to allow the app to run.
 
+## Guides and Tutorials
+Check out the [Wiki](https://github.com/hed-standard/CTagger/wiki) page for guides and tutorials
