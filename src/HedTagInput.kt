@@ -39,7 +39,7 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
 
         if (result != null) {
             val isValid = tagger.hedValidator.validateEntry(text.substring(result.first, result.second))
-            if (isValid) {
+            if (isValid && !tagger.hedTagList.isEmpty()) {
                 try {
                     val pos = modelToView(caretPosition)
                     tagger.showSearchResultPane(10, pos.y + 25) // put the search result at the left most but under current caret
@@ -56,7 +56,8 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
 //                redHighlight(result.first, result.second)
             }
         }
-
+        else
+            tagger.hideSearchResultPane()
     }
 
     override fun changedUpdate(e: DocumentEvent) {
@@ -107,8 +108,9 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
                 startPos = Utilities.getWordStart(this, newPos-1)
             }
             var endPos = pos
-//            println(text.substring(startPos,endPos))
-            if (text.substring(startPos,endPos) == ",")
+
+            // if new line OR comma OR empty space
+            if (startPos >= text.length || (startPos == endPos && text[startPos] == ',') || ((endPos-startPos) == 1 && text[startPos] == ' '))
                 return null
             else
                 return Pair(startPos, pos)

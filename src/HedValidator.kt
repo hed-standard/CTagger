@@ -24,6 +24,7 @@ class HedValidator(private val schema: HashMap<String, TagModel>, private val ta
                     val tagModel = schema[parentNode]!!
                     if (tagModel.childRequired) {
                         if (tagModel.takesValue || schema.containsKey("$parentNode/#")) { // sometimes takesValue attribute is set in the # node
+                            tagger.hedTagList.clear()
                             val valueNode = schema["$parentNode/#"]!! // all takesValue nodes are followed by a #
                             return validateValueInput(valueInput, valueNode)
                         }

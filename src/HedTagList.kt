@@ -47,6 +47,17 @@ class HedTagList(private val tagger: CTagger, private val tags: List<String>, pr
     override fun focusLost(e: FocusEvent?) {
         tagger.hideSearchResultPane()
     }
+
+    fun isEmpty() : Boolean{
+        return listModel.isEmpty
+    }
+
+    /**
+     * Clear list
+     */
+    fun clear() {
+        listModel.clear()
+    }
     class ListKeySelectListener(private val tagList: HedTagList, private val tagger: CTagger) : KeyListener {
         override fun keyTyped(e: KeyEvent?) {
         }

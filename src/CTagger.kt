@@ -322,8 +322,12 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         val jsonFieldMap = HashMap<String, Any>()
         fMap.forEach {
             // value type, ignoring empty fields
-            if (fieldList.isValueField.containsKey(it.key) && fieldList.isValueField[it.key]!! && it.value.containsKey("HED") && it.value["HED"]!!.isNotEmpty())
-                jsonFieldMap[it.key] = hashMapOf(Pair("HED", it.value["HED"]!!))
+            if (fieldList.isValueField.containsKey(it.key) && fieldList.isValueField[it.key]!! && it.value.containsKey("HED") && it.value["HED"]!!.isNotEmpty()) {
+                var finalString = it.value["HED"]!!
+                finalString = finalString.replace("\n", "")
+                finalString = finalString.replace("\t", "")
+                jsonFieldMap[it.key] = hashMapOf(Pair("HED", finalString))
+            }
             // categorical fields
             else {
                 val finalMap = HashMap<String, String>()
@@ -333,6 +337,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
                         // some clean-up
                         var finalString = map.value
                         finalString = finalString.replace("\n", "")
+                        finalString = finalString.replace("\t", "")
                         finalMap[map.key] = finalString
                     }
                 }
