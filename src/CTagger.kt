@@ -158,7 +158,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
     }
 
     /**
-     * Add Event code and tag Input panes
+     * Add field level and tag Input panes
      */
     private fun addCenterPane(mainPane: Container) {
         val centerPane = JPanel(GridBagLayout())
@@ -167,7 +167,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         c.gridy = 0
         c.gridwidth = 2
         c.anchor = GridBagConstraints.LINE_START
-        val eventPaneLabel = JLabel("Event code")
+        val eventPaneLabel = JLabel("Field levels")
         eventPaneLabel.border = EmptyBorder(0,10,0,0)
         eventPaneLabel.foreground = Style.BLUE_DARK
         eventPaneLabel.font = Font("Sans Serif", Font.BOLD, 14)
