@@ -1,5 +1,6 @@
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.internal.LinkedTreeMap
 import com.google.gson.reflect.TypeToken
 import com.univocity.parsers.tsv.TsvParser
 import com.univocity.parsers.tsv.TsvParserSettings
@@ -102,7 +103,18 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
 
         // Import event file menu item
         var submenu = JMenu("Import")
-        var menuItem = JMenuItem("Import BIDS events.tsv file")
+        var menuItem = JMenuItem("Import annotation spreadsheet")
+        menuItem.addActionListener {
+            val fc = JFileChooser()
+            val fileChosen = fc.showOpenDialog(frame)
+            if (fileChosen == JFileChooser.APPROVE_OPTION) {
+                val file = fc.selectedFile
+                importSpreadsheet(file)
+            }
+        }
+        submenu.add(menuItem)
+
+        menuItem = JMenuItem("Import BIDS events.tsv file")
         menuItem.addActionListener {
             val fc = JFileChooser()
             val fileChosen = fc.showOpenDialog(frame)
@@ -112,6 +124,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             }
         }
         submenu.add(menuItem)
+
         menuItem = JMenuItem("Import BIDS events.json file")
         menuItem.addActionListener {
             val fc = JFileChooser()
@@ -378,6 +391,110 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
                     e.printStackTrace()
                 }
             }
+        }
+    }
+    /**
+     * Retrieve event info from .tsv file
+     * and populate GUI
+     */
+    private fun importSpreadsheet(file: File) {
+        try {
+            val settings = TsvParserSettings()
+            settings.format.lineSeparator = "\n".toCharArray()
+            val parser = TsvParser(settings)
+            // parse file as a collection of rows
+            val allRows = parser.parseAll(file)
+
+            // show dialog to verify categorical fields
+            var categoricalField = mutableListOf<String>()
+            var isCancelled = false
+
+            // create dialog
+            val dialog = JDialog(frame, "", true)
+            val pane = JPanel(BorderLayout())
+            pane.border = EmptyBorder(10, 10, 10, 10)
+            val label = JLabel("Indicate specific non-prefixed tag columns (column numbers start with 1):")
+            label.border = EmptyBorder(10,0,10,0)
+            pane.add(label, BorderLayout.PAGE_START)
+            val inputPane = JPanel()
+            val layout = GridLayout(0,2)
+            inputPane.layout = layout
+            inputPane.add(JLabel("Event fields"))
+            val fieldCol = JTextField("")
+            inputPane.add(fieldCol)
+            inputPane.add(JLabel("Field values"))
+            val valueCol = JTextField("")
+            inputPane.add(valueCol)
+            inputPane.add(JLabel("HED annotation"))
+            val hedCol = JTextField("")
+            inputPane.add(hedCol)
+            pane.add(inputPane, BorderLayout.CENTER)
+            val btnPane = JPanel()
+            val okBtn = JButton("Ok")
+            okBtn.addActionListener {
+                dialog.dispose()
+            }
+            val cancelBtn = JButton("Cancel")
+            cancelBtn.addActionListener{
+                dialog.dispose()
+                isCancelled = true
+            }
+            btnPane.add(okBtn)
+            btnPane.add(cancelBtn)
+            pane.add(btnPane, BorderLayout.PAGE_END)
+            dialog.contentPane = pane
+            dialog.pack()
+            val dim = Toolkit.getDefaultToolkit().screenSize
+            dialog.setLocation(dim.width / 2 - dialog.size.width / 2, dim.height / 2 - dialog.size.height / 2) // put center of screen
+            dialog.isVisible = true
+
+            // user entered column indices. Proceed
+            if (!isCancelled) {
+                val fieldIdx = fieldCol.text.toInt() - 1
+                val valueIdx = valueCol.text.toInt() - 1
+                val hedIdx = hedCol.text.toInt() - 1
+                val fieldMap = HashMap<String,BIDSFieldDict>()
+                for ((rowIndex, row) in allRows.withIndex()) {
+                    if (rowIndex > 0) {// ignore first row which contains column headers
+                        val field = row[fieldIdx]
+                        val value = if (row[valueIdx].isNullOrEmpty()) "" else row[valueIdx]
+                        val hed =  if (row[hedIdx].isNullOrEmpty()) "" else row[hedIdx].trim('"')
+
+                        if (!fieldMap.containsKey(field))
+                            fieldMap[row[fieldIdx]] = BIDSFieldDict()
+
+                        if (value.isEmpty() || value.toLowerCase() == "n/a")
+                            fieldMap[field]?.HED = hed
+                        else { // categorical values
+                            if (fieldMap[field]?.HED.toString().isEmpty()) { // if first time
+                                fieldMap[field]?.HED = LinkedTreeMap<String,String>()
+                                (fieldMap[field]?.HED as LinkedTreeMap<String,String>)[value] = hed
+                            }
+                            else
+                                (fieldMap[field]?.HED as LinkedTreeMap<String,String>)[value] = hed
+                        }
+                    }
+                }
+
+                // parse successfully. Creating fields
+                // reset if not empty
+                if (!fieldList.isEmpty()) {
+                    JOptionPane.showMessageDialog(frame, "Clearing old fields")
+                    fieldList.clear()
+                }
+                fieldMap.forEach {
+                    // assuming that first row contains field names as BIDS TSV
+                    // add fields to combo box
+                    fieldList.addFieldFromDict(it.key.toLowerCase(), it.value)
+                }
+                // initialize tagging GUI
+                eventCodeList.codeSet = fieldList.fieldAndUniqueCodeMap[fieldList.selectedItem!!]!! // add codes of current field
+                eventCodeList.selectedIndex = 0 // select first code in the list
+                fieldList.repaint()
+            }
+        }
+        catch (e: Exception) {
+            JOptionPane.showMessageDialog(frame, "Error importing BIDS _events.tsv. Make sure that your file is BIDS compliant.", "Import error", JOptionPane.ERROR_MESSAGE)
         }
     }
 
