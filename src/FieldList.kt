@@ -1,3 +1,4 @@
+import com.google.gson.internal.LinkedTreeMap
 import java.awt.event.ItemEvent
 import javax.swing.JComboBox
 
@@ -61,18 +62,36 @@ class FieldList(val tagger: CTagger): JComboBox<String>() {
 
     }
     fun addFieldFromDict(field:String, fieldDict: CTagger.BIDSFieldDict) {
+        // add field name to dropdown list
         addItem(field)
+        // add field to data structure
         // whether a field is categorical is determined by whether Levels has values or not
         if (fieldDict.Levels.isNotEmpty()) {
             fieldAndUniqueCodeMap[field] = fieldDict.Levels.keys.toList()
             isValueField[field] = false
-        } else {
+        }
+        else if (fieldDict.HED is LinkedTreeMap<*,*>) {
+            fieldAndUniqueCodeMap[field] = (fieldDict.HED as LinkedTreeMap<String, String>).keys.toList()
+            isValueField[field] = false
+        }
+        else {
             fieldAndUniqueCodeMap[field] = listOf("HED")
             isValueField[field] = true
         }
         // initialize fieldMap
         fieldMap[field] = HashMap()
-        fieldAndUniqueCodeMap[field]!!.forEach { fieldMap[field]!![it] = "" }
+        // initialize codeMap, add HED string to code if contained in fieldDict
+        val hasHED = (fieldDict.HED is String && fieldDict.HED.toString().isNotEmpty()) || (fieldDict.HED is LinkedTreeMap<*,*>)
+        fieldAndUniqueCodeMap[field]!!.forEach {
+            fieldMap[field]!![it] = ""
+            if (hasHED) {
+                if (isValueField[field]!! && it.equals("HED"))
+                    fieldMap[field]!![it] = fieldDict.HED.toString()
+                else if (fieldDict.HED is LinkedTreeMap<*, *> && (fieldDict.HED as LinkedTreeMap<String, String>).containsKey(it))
+                    fieldMap[field]!![it] = (fieldDict.HED as LinkedTreeMap<String,String>)[it].toString()
+            }
+
+        }
 
     }
     fun isEmpty(): Boolean {
