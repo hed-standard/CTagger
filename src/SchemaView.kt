@@ -2,18 +2,22 @@ import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.Toolkit
-import java.io.StringReader
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import java.awt.event.MouseListener
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.event.TreeSelectionListener
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeCellRenderer
-import javax.xml.bind.JAXBContext
+import javax.swing.tree.TreePath
 
 
 class SchemaView(private val tagger: CTagger, hedRoot: TagModel) : TreeSelectionListener {
     var tree : JTree
+    var nodeDescription: HashMap<String, String> = HashMap()
+    lateinit var infoPane: JTextArea
     val frame = JFrame("HED Schema ${tagger.hedVersion}")
     init {
         frame.setSize(1024, 800)
@@ -33,7 +37,21 @@ class SchemaView(private val tagger: CTagger, hedRoot: TagModel) : TreeSelection
         populateTagSets(root, hedRoot.children)
 
         tree = JTree(root)
-        tree.addTreeSelectionListener(this)
+        var ml: MouseListener = object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
+                val selRow = tree.getRowForLocation(e.getX(), e.getY())
+                if (selRow != -1) {
+                    val selPath: TreePath = tree.getPathForLocation(e.getX(), e.getY())
+                    if (e.getClickCount() === 1) {
+                        mySingleClick(selRow, selPath)
+                    } else if (e.getClickCount() === 2) {
+                        myDoubleClick(selRow, selPath)
+                    }
+                }
+            }
+        }
+//        tree.addTreeSelectionListener(this)
+        tree.addMouseListener(ml)
         tree.showsRootHandles = true
         val renderer = DefaultTreeCellRenderer()
         renderer.leafIcon = null
@@ -44,14 +62,40 @@ class SchemaView(private val tagger: CTagger, hedRoot: TagModel) : TreeSelection
         val treeView = JScrollPane(tree)
         treeView.preferredSize = Dimension(250, 400)
         mainPane.add(treeView, BorderLayout.CENTER)
+
+        infoPane = JTextArea(4,10)
+        infoPane.lineWrap = true
+        infoPane.wrapStyleWord = true
+        infoPane.isEditable = false
+        val infoView = JScrollPane(infoPane)
+        infoView.preferredSize = Dimension(250, 400)
+        mainPane.add(infoView, BorderLayout.EAST)
+
         frame.defaultCloseOperation = JFrame.HIDE_ON_CLOSE
         frame.pack()
     }
 
+    fun mySingleClick(selRow:Int, selPath: TreePath) {
+        val node = tree.lastSelectedPathComponent as DefaultMutableTreeNode
+        val nodeInfo = node.userObject
+        if (nodeInfo.toString() != "HED") {
+            infoPane.text = nodeDescription[nodeInfo.toString()]
+        }
+    }
+    fun myDoubleClick(selRow:Int, selPath: TreePath) {
+        val node = tree.lastSelectedPathComponent as DefaultMutableTreeNode
+        val nodeInfo = node.userObject
+        if (nodeInfo.toString() != "HED") {
+            infoPane.text = nodeDescription[nodeInfo.toString()]
+            val hedInputDoc = tagger.hedTagInput.document
+            hedInputDoc.insertString(tagger.hedTagInput.caretPosition, "${if (nodeInfo.toString() == "#") node.parent.toString()+"/" else nodeInfo}, ", null)
+        }
+    }
     override fun valueChanged(e: TreeSelectionEvent?) {
         val node = tree.lastSelectedPathComponent as DefaultMutableTreeNode
         val nodeInfo = node.userObject
         if (nodeInfo.toString() != "HED") {
+            infoPane.text = nodeDescription[nodeInfo.toString()]
             val hedInputDoc = tagger.hedTagInput.document
             hedInputDoc.insertString(tagger.hedTagInput.caretPosition, "${if (nodeInfo.toString() == "#") node.parent.toString()+"/" else nodeInfo}, ", null)
         }
@@ -60,6 +104,7 @@ class SchemaView(private val tagger: CTagger, hedRoot: TagModel) : TreeSelection
     // Add tags to tree recursively
     private fun populateTagSets(parent: DefaultMutableTreeNode, tagSets: List<TagModel>) {
         for (tagModel: TagModel in tagSets) {
+            nodeDescription[tagModel.name!!] = tagModel.description!!
             val curNode = DefaultMutableTreeNode(tagModel.name)
             parent.add(curNode)
             populateTagSets(curNode, tagModel.children)

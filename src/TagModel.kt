@@ -1,7 +1,7 @@
 class TagModel(val fullPath: String, var parent: TagModel? = null, xmlModel: TagXmlModel?): Comparable<TagModel> {
     var name: String? = null
     var depth = 0
-    var description: String? = null
+    var description: String = ""
     var childRequired = false
     var extensionAllowed = false
     var takesValue = false
