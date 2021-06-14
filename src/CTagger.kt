@@ -5,6 +5,8 @@ import com.google.gson.reflect.TypeToken
 import com.univocity.parsers.tsv.TsvParser
 import com.univocity.parsers.tsv.TsvParserSettings
 import java.awt.*
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
@@ -55,7 +57,13 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         }
 
         frame.setSize(1000, 800)
-        frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        frame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
+        frame.addWindowListener(object : WindowAdapter() {
+            override fun windowClosing(evt: WindowEvent?) {
+                loader.notified = true
+                loader.canceled = true
+            }
+        })
         val dim = Toolkit.getDefaultToolkit().screenSize
         frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
 
