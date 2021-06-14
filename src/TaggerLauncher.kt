@@ -29,7 +29,7 @@ class TaggerLauncher: JFrame() {
             val fileChosen = fc.showOpenDialog(this)
             if (fileChosen == JFileChooser.APPROVE_OPTION) {
                 val file = fc.selectedFile.toString()
-                SwingUtilities.invokeLater { CTagger(isJson = false, isTSV = true, filename = file, isScratch = false) }
+                SwingUtilities.invokeLater { CTagger(isJson = false, isTSV = true, filename = file, jsonString = "",isScratch = false) }
                 isVisible = false
             }
         }
@@ -39,13 +39,13 @@ class TaggerLauncher: JFrame() {
             val fileChosen = fc.showOpenDialog(this)
             if (fileChosen == JFileChooser.APPROVE_OPTION) {
                 val file = fc.selectedFile.toString()
-                SwingUtilities.invokeLater { CTagger(isJson = true, isTSV = false, filename = file, isScratch = false) }
+                SwingUtilities.invokeLater { CTagger(isJson = true, isTSV = false, filename = file, jsonString = "",isScratch = false) }
                 isVisible = false
             }
         }
         val startScratchBtn = JButton("Quick tagging")
         startScratchBtn.addActionListener {
-            SwingUtilities.invokeLater { CTagger(isJson = false, isTSV = false, filename = "", isScratch=true) }
+            SwingUtilities.invokeLater { CTagger(isJson = false, isTSV = false, filename = "", jsonString = "",isScratch=true) }
             isVisible = false
         }
         btnPanel.add(importTSVBtn)

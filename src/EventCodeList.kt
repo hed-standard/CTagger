@@ -43,12 +43,12 @@ class EventCodeList(val tagger: CTagger) : JList<String>() {
 //                        eList.setSelectedValue(prevSelected, true)
 //                    }
 //                    else {
-                        // save current tags
                         val curField = tagger.fieldList.selectedItem.toString()
                         val codeMap = tagger.fieldList.fieldMap[curField]
-                        if (codeMap != null && prevSelected != null) {
-                            codeMap[prevSelected] = tagger.hedTagInput.getCleanHEDString()
-                        }
+                        // save current tags
+//                        if (codeMap != null && prevSelected != null) {
+//                            codeMap[prevSelected] = tagger.hedTagInput.getCleanHEDString()
+//                        }
 
                         eList.prevSelected = selected
 

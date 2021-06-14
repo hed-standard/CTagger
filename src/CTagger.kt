@@ -5,7 +5,6 @@ import com.google.gson.reflect.TypeToken
 import com.univocity.parsers.tsv.TsvParser
 import com.univocity.parsers.tsv.TsvParserSettings
 import java.awt.*
-import java.awt.event.WindowEvent
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
@@ -15,15 +14,15 @@ import java.net.URL
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 import javax.xml.bind.JAXBContext
-import kotlin.concurrent.timer
 
 
 fun main() {
-    SwingUtilities.invokeLater { CTagger(isJson = false, isTSV = false, filename = "", isScratch=true) }
+    SwingUtilities.invokeLater { CTagger(isJson = false, isTSV = false, filename = "", jsonString="", isScratch=true) }
 }
 
-class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var isScratch:Boolean) {
+class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var jsonString:String, var isScratch:Boolean) {
     var isVerbose = false
+    lateinit var loader: TaggerLoader
     private val frame = JFrame("CTAGGER")
     var hedVersion = ""
     lateinit var unitClasses: Set<UnitClassXmlModel>
@@ -46,7 +45,10 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         if (isTSV)
             importBIDSEventTSV(File(filename))
         else if (isJson)
-            importBIDSEventJson(File(filename))
+            if (filename.isEmpty() && jsonString.isNotEmpty())
+                importBIDSEventJson(jsonString)
+            else
+                importBIDSEventJson(File(filename))
         else {
             isScratch = true
             importBIDSEventJson("{'none': {}}")
@@ -75,23 +77,23 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         frame.isVisible = true
 
         // start saving thread
-        timer(name = "Save tags", period = 3000) {
-            if (isVerbose) println("Saving tags")
-            // save current tags
-            try {
-                val curField = fieldList.selectedItem.toString()
-                val fieldMap = fieldList.fieldMap
-                if (curField != null && fieldMap.containsKey(curField)) {
-                    val codeMap = fieldMap[curField]
-                    val selected = eventCodeList.selectedValue
-                    if (selected != null && codeMap!!.containsKey(selected))
-                        codeMap!![selected] = hedTagInput.getCleanHEDString()
-                }
-            }
-            catch (e: Exception) {
-                // Simply ignore and not save
-            }
-        }
+//        timer(name = "Save tags", period = 500) {
+//            if (isVerbose) println("Saving tags")
+//            // save current tags
+//            try {
+//                val curField = fieldList.selectedItem.toString()
+//                val fieldMap = fieldList.fieldMap
+//                if (curField != null && fieldMap.containsKey(curField)) {
+//                    val codeMap = fieldMap[curField]
+//                    val selected = eventCodeList.selectedValue
+//                    if (selected != null && codeMap!!.containsKey(selected))
+//                        codeMap!![selected] = hedTagInput.getCleanHEDString()
+//                }
+//            }
+//            catch (e: Exception) {
+//                // Simply ignore and not save
+//            }
+//        }
     }
 
     private fun createMenuBar() {
@@ -214,9 +216,33 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         c = GridBagConstraints()
         c.gridx = 3
         c.gridy = 0
-        c.gridwidth = 3
+        c.gridwidth = 1
         c.anchor = GridBagConstraints.LINE_END
         c.insets = Insets(0,10,0,10)
+        val saveTagBtn = JButton("Save current tags")
+        saveTagBtn.addActionListener {
+            try {
+                val curField = fieldList.selectedItem.toString()
+                val fieldMap = fieldList.fieldMap
+                if (curField != null && fieldMap.containsKey(curField)) {
+                    val codeMap = fieldMap[curField]
+                    val selected = eventCodeList.selectedValue
+                    if (selected != null && codeMap!!.containsKey(selected))
+                        codeMap!![selected] = hedTagInput.getCleanHEDString()
+                }
+            }
+            catch (e: Exception) {
+                // Simply ignore and not save
+            }
+        }
+        centerPane.add(saveTagBtn, c)
+
+        c = GridBagConstraints()
+        c.gridx = 3
+        c.gridy = 0
+        c.gridwidth = 3
+        c.anchor = GridBagConstraints.LINE_END
+        c.insets = Insets(0,30,0,10)
         val showSchemaBtn = JButton("Show HED schema")
         showSchemaBtn.addActionListener {
             schemaView.show()
@@ -252,13 +278,25 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
     }
 
     private fun addDoneBtn(mainPane: Container) {
+        val btnPane = JPanel()
+        val cancelBtn = JButton("Cancel")
+        cancelBtn.addActionListener {
+            loader.notified = true
+            loader.canceled = true
+            frame.dispose()
+        }
+        btnPane.add(cancelBtn)
         val doneBtn = JButton("Done")
         doneBtn.addActionListener {
             showJsonWindow()
-            frame.dispatchEvent(WindowEvent(frame, WindowEvent.WINDOW_CLOSING))
+            loader.notified = true
+            loader.jsonResult = prettyPrintJson(exportToJson(fieldList.fieldMap))
+            frame.dispose()
+//            frame.dispatchEvent(WindowEvent(frame, WindowEvent.WINDOW_CLOSING))
         }
 
-        mainPane.add(doneBtn, BorderLayout.SOUTH)
+        btnPane.add(doneBtn)
+        mainPane.add(btnPane, BorderLayout.SOUTH)
     }
 
     /**
@@ -266,7 +304,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
      * and build schema model
      * @param version   Version of the schema
      */
-    private fun getHedXmlModel(version:String = "HED8.0.0-alpha.1") {
+    private fun getHedXmlModel(version:String = "HED8.0.0-alpha.2") {
         val schemaLink = URL("https://raw.githubusercontent.com/hed-standard/hed-specification/master/hedxml/${version}.xml")
         val xmlData = schemaLink.readText()
         val hedXmlModel: HedXmlModel
@@ -367,12 +405,13 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
 
     private fun showJsonWindow() {
         val json = prettyPrintJson(exportToJson(fieldList.fieldMap))
-        val textarea = JTextArea(10,20)
+        val textarea = JTextArea(25,50)
         textarea.text = json
         textarea.isEditable = false
         val scroller = JScrollPane(textarea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
         val options1 = arrayOf<Any>("Save to file", "Ok")
         val result = JOptionPane.showOptionDialog(frame, scroller, "BIDS events.json HED string", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, options1, 1)
+
         // if save to file selected
         if (result == 0) {
             val fileChooser = JFileChooser()
@@ -586,7 +625,6 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             val type: Type = object : TypeToken<HashMap<String?, BIDSFieldDict>?>() {}.type
             val gson = Gson()
             val result: HashMap<String, BIDSFieldDict> = gson.fromJson(json, type)
-            println(result)
             // reset if not empty
             if (!fieldList.isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "Clearing old fields")
@@ -612,7 +650,6 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             val type: Type = object : TypeToken<HashMap<String?, BIDSFieldDict>?>() {}.type
             val gson = Gson()
             val result: HashMap<String, BIDSFieldDict> = gson.fromJson(json, type)
-            println(result)
             // reset if not empty
             if (!fieldList.isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "Clearing old fields")
@@ -629,7 +666,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
             fieldList.repaint()
         }
         catch (e: Exception) {
-            JOptionPane.showMessageDialog(frame, "Error importing BIDS _events.json", "Import error", JOptionPane.ERROR_MESSAGE)
+            JOptionPane.showMessageDialog(frame, "Error importing", "Import error", JOptionPane.ERROR_MESSAGE)
         }
     }
     /**
