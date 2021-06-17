@@ -17,14 +17,15 @@ import java.net.URL
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 import javax.xml.bind.JAXBContext
+import kotlin.system.exitProcess
 
 fun main() {
     SwingUtilities.invokeLater { CTagger(isJson = false, isTSV = false, filename = "", jsonString="", isScratch=true) }
 }
 
-class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var jsonString:String, var isScratch:Boolean) {
+class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: Boolean, var filename:String, var jsonString:String, var isScratch:Boolean) {
     var isVerbose = false
-    lateinit var loader: TaggerLoader
+    var loader: TaggerLoader? = null
     private val frame = JFrame("CTAGGER")
     var hedVersion = ""
     lateinit var unitClasses: Set<UnitClassXmlModel>
@@ -57,11 +58,16 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         }
 
         frame.setSize(1000, 800)
-        frame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
+        if (isStandalone)
+            frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        else
+            frame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
         frame.addWindowListener(object : WindowAdapter() {
             override fun windowClosing(evt: WindowEvent?) {
-                loader.notified = true
-                loader.canceled = true
+                if (!isStandalone) {
+                    loader!!.notified = true
+                    loader!!.canceled = true
+                }
             }
         })
         val dim = Toolkit.getDefaultToolkit().screenSize
@@ -289,17 +295,25 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         val btnPane = JPanel()
         val cancelBtn = JButton("Cancel")
         cancelBtn.addActionListener {
-            loader.notified = true
-            loader.canceled = true
-            frame.dispose()
+            if (!isStandalone) {
+                loader!!.notified = true
+                loader!!.canceled = true
+                frame.dispose()
+            }
+            else
+                exitProcess(0)
         }
         btnPane.add(cancelBtn)
         val doneBtn = JButton("Done")
         doneBtn.addActionListener {
             showJsonWindow()
-            loader.notified = true
-            loader.jsonResult = prettyPrintJson(exportToJson(fieldList.fieldMap))
-            frame.dispose()
+            if (!isStandalone) {
+                loader!!.notified = true
+                loader!!.jsonResult = prettyPrintJson(exportToJson(fieldList.fieldMap))
+                frame.dispose()
+            }
+            else
+                exitProcess(0)
 //            frame.dispatchEvent(WindowEvent(frame, WindowEvent.WINDOW_CLOSING))
         }
 

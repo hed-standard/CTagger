@@ -13,7 +13,7 @@ class TaggerLoader(var jsonString:String) {
     var jsonResult: String = ""
     init {
         SwingUtilities.invokeLater {
-            val tagger = CTagger(isJson = true, isTSV = false, filename = "", jsonString = jsonString, isScratch = true)
+            val tagger = CTagger(isStandalone = false, isJson = true, isTSV = false, filename = "", jsonString = jsonString, isScratch = true)
             tagger.loader = this
         }
     }
