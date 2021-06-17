@@ -1,3 +1,8 @@
+package model;
+
+import model.UnitXmlModel;
+import model.UnitsXmlModel;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -18,7 +23,7 @@ public class UnitClassXmlModel {
 	private String name = ""; // name of the unit class, e.g. Time, PhysicalLength...
 	private UnitsXmlModel units;
 
-//	public void addChild(UnitClassXmlModel child) {
+//	public void addChild(model.UnitClassXmlModel child) {
 //		unitClass.add(child);
 //	}
 //

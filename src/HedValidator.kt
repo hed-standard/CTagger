@@ -1,3 +1,5 @@
+import model.TagModel
+
 class HedValidator(private val schema: HashMap<String, TagModel>, private val tagger: CTagger) {
     fun validateEntry(entry: String): Boolean{
         val entry_trimmed = entry.trim()

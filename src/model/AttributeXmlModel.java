@@ -1,3 +1,5 @@
+package model;
+
 import javax.xml.bind.annotation.*;
 import java.util.LinkedHashSet;
 import java.util.Set;

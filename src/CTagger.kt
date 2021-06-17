@@ -4,6 +4,7 @@ import com.google.gson.internal.LinkedTreeMap
 import com.google.gson.reflect.TypeToken
 import com.univocity.parsers.tsv.TsvParser
 import com.univocity.parsers.tsv.TsvParserSettings
+import model.*
 import java.awt.*
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
@@ -16,7 +17,6 @@ import java.net.URL
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 import javax.xml.bind.JAXBContext
-
 
 fun main() {
     SwingUtilities.invokeLater { CTagger(isJson = false, isTSV = false, filename = "", jsonString="", isScratch=true) }
@@ -326,7 +326,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
         }
         unitClasses = hedXmlModel.unitClasses.unitClasses
         unitModifiers = hedXmlModel.unitModifiers.unitModifiers
-        val hedRoot = TagModel("",null, null)
+        val hedRoot = TagModel("", null, null)
         populateTagSets(hedRoot, hedXmlModel.tags, false)
         hedValidator = HedValidator(schema, this)
         schemaView = SchemaView(this, hedRoot)

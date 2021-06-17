@@ -1,3 +1,5 @@
+package model
+
 class TagModel(val fullPath: String, var parent: TagModel? = null, xmlModel: TagXmlModel?): Comparable<TagModel> {
     var name: String? = null
     var depth = 0

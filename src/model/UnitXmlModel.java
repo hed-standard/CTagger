@@ -1,3 +1,5 @@
+package model;
+
 import javax.xml.bind.annotation.*;
 
 /**
