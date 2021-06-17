@@ -15,7 +15,9 @@ public class HedXmlModel {
 	@XmlAttribute
 	private String version;
 	@XmlElement
-	private Set<TagXmlModel> node;
+	private SchemaXmlModel schema;
+	@XmlElement
+	private String epilogue;
 	@XmlElement
 	private UnitClassesXmlModel unitClasses;
 	@XmlElement
@@ -23,13 +25,14 @@ public class HedXmlModel {
 
 	public HedXmlModel() {
 		version = new String();
-		node = new LinkedHashSet<TagXmlModel>();
+		schema = new SchemaXmlModel();
+		epilogue = new String();
 		unitClasses = new UnitClassesXmlModel();
 		unitModifiers = new UnitModifiersXmlModel();
 	}
 
 	public Set<TagXmlModel> getTags() {
-		return node;
+		return schema.getTags();
 	}
 
 	public String getVersion() {
@@ -43,7 +46,7 @@ public class HedXmlModel {
 	public UnitModifiersXmlModel getUnitModifiers() {return unitModifiers;}
 
 	public void setTags(Set<TagXmlModel> tags) {
-		this.node = tags;
+		this.schema.setTags(tags);
 	}
 
 	public void setUnitClasses(UnitClassesXmlModel unitClasses) {
@@ -56,10 +59,6 @@ public class HedXmlModel {
 
 	@Override
 	public String toString() {
-		String s = "";
-		for (TagXmlModel tagModel : node) {
-			s += tagModel.toString() + "\n";
-		}
-		return s;
+		return schema.toString();
 	}
 }

@@ -312,8 +312,8 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
      * and build schema model
      * @param version   Version of the schema
      */
-    private fun getHedXmlModel(version:String = "HED8.0.0-alpha.2") {
-        val schemaLink = URL("https://raw.githubusercontent.com/hed-standard/hed-specification/master/hedxml/${version}.xml")
+    private fun getHedXmlModel(version:String = "HED8.0.0-beta.1a") {
+        val schemaLink = URL("https://raw.githubusercontent.com/hed-standard/hed-specification/master/hedxsd-test/${version}.xml")
         val xmlData = schemaLink.readText()
         val hedXmlModel: HedXmlModel
         try {
@@ -338,10 +338,10 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
     // Add tags recursively
     private fun populateTagSets(parent: TagModel, tagSets: Set<TagXmlModel>, parentExtensionAllowed: Boolean) {
         for (tagXmlModel: TagXmlModel in tagSets) {
-            if (parentExtensionAllowed)
-                tagXmlModel.isExtensionAllowed = parentExtensionAllowed
             val tagPath = "${parent.fullPath}/${tagXmlModel.name}"
             val tagModel = TagModel(tagPath, parent, tagXmlModel)
+            if (parentExtensionAllowed)
+                tagModel.setAttribute("extensionAllowed")
             parent.children.add(tagModel)
             val nodes = tagPath.split('/')
             for (i in nodes.size-1 downTo 0) {
@@ -350,7 +350,7 @@ class CTagger(val isJson: Boolean, var isTSV: Boolean, var filename:String, var 
                     schema[path] = tagModel
             }
             tags.add(tagPath)
-            populateTagSets(tagModel, tagXmlModel.tags, tagXmlModel.isExtensionAllowed)
+            populateTagSets(tagModel, tagXmlModel.tags, tagModel.hasAttribute("extensionAllowed"))
         }
     }
 

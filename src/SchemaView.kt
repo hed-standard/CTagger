@@ -43,9 +43,9 @@ class SchemaView(private val tagger: CTagger, hedRoot: TagModel) : TreeSelection
                 if (selRow != -1) {
                     val selPath: TreePath = tree.getPathForLocation(e.getX(), e.getY())
                     if (e.getClickCount() === 1) {
-                        mySingleClick(selRow, selPath)
+                        showTagInfo(selRow, selPath)
                     } else if (e.getClickCount() === 2) {
-                        myDoubleClick(selRow, selPath)
+                        addTagToEditor(selRow, selPath)
                     }
                 }
             }
@@ -75,14 +75,26 @@ class SchemaView(private val tagger: CTagger, hedRoot: TagModel) : TreeSelection
         frame.pack()
     }
 
-    fun mySingleClick(selRow:Int, selPath: TreePath) {
+    fun showTagInfo(selRow:Int, selPath: TreePath) {
         val node = tree.lastSelectedPathComponent as DefaultMutableTreeNode
         val nodeInfo = node.userObject
-        if (nodeInfo.toString() != "HED") {
-            infoPane.text = nodeDescription[nodeInfo.toString()]
+        val tagModel = tagger.schema[nodeInfo.toString()]
+        if (nodeInfo.toString() != "HED" && tagModel != null) {
+            var info = tagModel.description+"\n"
+            if (tagModel.attributes.isNotEmpty()) {
+                info += "\nTag attributes:\n"
+                tagModel.attributes.forEach {key, value ->
+                    info += "$key\n"
+                    if (key == "suggestedTag")
+                        value!!.forEach { tag -> info += "\t$tag\n" }
+                    else if (key == "relatedTag")
+                        value!!.forEach { tag -> info += "\t$tag\n" }
+                }
+            }
+            infoPane.text = info
         }
     }
-    fun myDoubleClick(selRow:Int, selPath: TreePath) {
+    fun addTagToEditor(selRow:Int, selPath: TreePath) {
         val node = tree.lastSelectedPathComponent as DefaultMutableTreeNode
         val nodeInfo = node.userObject
         if (nodeInfo.toString() != "HED") {

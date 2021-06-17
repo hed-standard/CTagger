@@ -22,15 +22,15 @@ class HedValidator(private val schema: HashMap<String, TagModel>, private val ta
                     // 3. Unfinished node typing (e.g. Event/Se) --> previous node is not end node
                     // check based on the previous node
                     val tagModel = schema[parentNode]!!
-                    if (tagModel.childRequired) {
-                        if (tagModel.takesValue || schema.containsKey("$parentNode/#")) { // sometimes takesValue attribute is set in the # node
+                    if (tagModel.hasAttribute("childRequired")) {
+                        if (tagModel.hasAttribute("takesValue") || schema.containsKey("$parentNode/#")) { // sometimes takesValue attribute is set in the # node
                             tagger.hedTagList.clear()
                             val valueNode = schema["$parentNode/#"]!! // all takesValue nodes are followed by a #
                             return validateValueInput(valueInput, valueNode)
                         }
                         else {
                             // not takesValue. Choose valid children or extensionAllowed instead
-                            if (tagModel.extensionAllowed)
+                            if (tagModel.hasAttribute("extensionAllowed"))
                                 // extensionAllowed. Just check for valid tag pattern
                                 return validateValueInput(valueInput, tagModel)
                             else {
@@ -39,7 +39,7 @@ class HedValidator(private val schema: HashMap<String, TagModel>, private val ta
                             }
                         }
                     }
-                    else if (tagModel.extensionAllowed) {
+                    else if (tagModel.hasAttribute("extensionAllowed")) {
                         // check if extended portion is valid
                         return validateValueInput(valueInput, tagModel)
                     }
@@ -58,10 +58,10 @@ class HedValidator(private val schema: HashMap<String, TagModel>, private val ta
     }
     private fun validateValueInput(typedText: String, tagModel: TagModel): Boolean {
         val validTagPattern = "[\\w|\\+|\\^|-|\\s|\\d|/]*"
-        if (!tagModel.isNumeric && tagModel.unitClass != "clockTime")
+        if (!tagModel.hasAttribute("isNumeric") && tagModel.getUnitClass() != "clockTime")
             return Regex(validTagPattern).matches(typedText)
         else {
-            if (tagModel.isNumeric) {
+            if (tagModel.hasAttribute("isNumeric")) {
                 val re = Regex("^((-?[0-9]+(\\.[0-9]+)?)|(-\\.[0-9]+))(\\w|\\s)*")
                 val matchResult = re.matchEntire(typedText)
                 if (matchResult == null)
@@ -72,7 +72,7 @@ class HedValidator(private val schema: HashMap<String, TagModel>, private val ta
                         val enteredUnit = matchResult.groups[1]!!.value.trim()
                         // validate with allowed units
                         val unitClass = tagger.unitClasses.find {
-                            it.name == tagModel.unitClass
+                            it.name == tagModel.getUnitClass()
                         }
                         if (unitClass != null) {
                             val allowedUnits = mutableListOf<String>()
@@ -91,7 +91,7 @@ class HedValidator(private val schema: HashMap<String, TagModel>, private val ta
                         }
                     }
                 }
-            } else if (tagModel.unitClass == "clockTime") {
+            } else if (tagModel.getUnitClass() == "clockTime") {
                 return typedText.matches(Regex("^((2[0-3]|[01]?[0-9]):([0-5]?[0-9]))|((2[0-3]|[01]?[0-9]):([0-5]?[0-9]):([0-5]?[0-9]))$"))
             }
         }
