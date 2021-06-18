@@ -29,7 +29,7 @@ class SchemaView(private val tagger: CTagger, hedRoot: TagModel) : TreeSelection
         val mainPane = frame.contentPane
         mainPane.layout = BorderLayout()
 
-        val prompt = JLabel("Click on a tag to add to the annotation")
+        val prompt = JLabel("Single click on a tag to view its info; Double click to add tag to the annotation")
         prompt.border = EmptyBorder(10,10,10,10)
         prompt.font = Font("San Serif", Font.BOLD, 12)
         prompt.foreground = Style.BLUE_DARK
