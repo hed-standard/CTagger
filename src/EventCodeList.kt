@@ -2,6 +2,7 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.DefaultListModel
 import javax.swing.JList
+import javax.swing.JOptionPane
 
 class EventCodeList(val tagger: CTagger) : JList<String>() {
     private val listModel = DefaultListModel<String>()
@@ -15,25 +16,24 @@ class EventCodeList(val tagger: CTagger) : JList<String>() {
 
     init {
         model = listModel
-        addMouseListener(EventCodeListListener())
+        addMouseListener(EventCodeListListener(tagger))
     }
 
     private fun updateListModel() {
         if (listModel.isEmpty)
             codeSet.forEach{ listModel.addElement(it) }
     }
-    private class EventCodeListListener: MouseAdapter() {
+    private class EventCodeListListener(val tagger:CTagger): MouseAdapter() {
         override fun mouseClicked(e: MouseEvent?) {
-            super.mouseClicked(e)
-            if (e != null) {
-                val eList = e.source as EventCodeList
-                if (!eList.valueIsAdjusting) {
-                    val tagger = eList.tagger
-                    val selected = eList.selectedValue
-                    var prevSelected = eList.prevSelected
-                    println("code $selected selected")
-
-                    // Check for invalid tag. Only proceed if no invalid tags found
+                super.mouseClicked(e)
+                if (e != null) {
+                    val eList = e.source as EventCodeList
+                    if (!eList.valueIsAdjusting) {
+                        val tagger = eList.tagger
+                        val selected = eList.selectedValue
+                        var prevSelected = eList.prevSelected
+                        println("code $selected selected")
+                        // Check for invalid tag. Only proceed if no invalid tags found
 //                    val invalidTags = tagger.hedTagInput.findInvalidTags()
 //                    if (invalidTags.isNotEmpty()) {
 //                        JOptionPane.showMessageDialog(tagger.frame,
@@ -59,8 +59,8 @@ class EventCodeList(val tagger: CTagger) : JList<String>() {
                         // hide search result pane
                         tagger.hideSearchResultPane()
                     }
-//                }
-            }
+                    tagger.isTagSaved = true
+                }
         }
     }
 }

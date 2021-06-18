@@ -20,10 +20,13 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
     private var isReplace = false
     private val validTagPattern = "\\w|\\+|\\^|-|\\s|\\d|/"
     private var caretPos = 0
+    private val defaultMessage = "Select field level and start tagging by typing here or click on \"Show HED schema\""
     init {
         document.addDocumentListener(this)
         addKeyListener(this)
         addMouseListener(this)
+        text = defaultMessage
+        tagger.isTagSaved = true
     }
 
     /**
@@ -35,35 +38,38 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
      */
     override fun insertUpdate(e: DocumentEvent) {
         caretPos = caretPosition
-        val result = getTagAtPos(caretPosition)
-
-        if (result != null) {
-            val isValid = tagger.hedValidator.validateEntry(text.substring(result.first, result.second))
-            if (isValid && !tagger.hedTagList.isEmpty()) {
-                try {
-                    val pos = modelToView(caretPosition)
-                    tagger.showSearchResultPane(10, pos.y + 25) // put the search result at the left most but under current caret
-                }
-                catch (e: Exception) {
-                    print("Exception " + e.message)
-                    e.printStackTrace()
-                }
-//                blackHighlight(result.first, result.second)
-//                requestFocusInWindow()
-            }
-            else {
-                tagger.hideSearchResultPane()
-//                redHighlight(result.first, result.second)
-            }
-        }
-        else
-            tagger.hideSearchResultPane()
+        tagger.hideSearchResultPane()
+        tagger.isTagSaved = false
+//        val result = getTagAtPos(caretPosition)
+//
+//        if (result != null) {
+//            val isValid = tagger.hedValidator.validateEntry(text.substring(result.first, result.second))
+//            if (isValid && !tagger.hedTagList.isEmpty()) {
+//                try {
+//                    val pos = modelToView(caretPosition)
+//                    tagger.showSearchResultPane(10, pos.y + 25) // put the search result at the left most but under current caret
+//                }
+//                catch (e: Exception) {
+//                    print("Exception " + e.message)
+//                    e.printStackTrace()
+//                }
+////                blackHighlight(result.first, result.second)
+////                requestFocusInWindow()
+//            }
+//            else {
+//                tagger.hideSearchResultPane()
+////                redHighlight(result.first, result.second)
+//            }
+//        }
+//        else
+//            tagger.hideSearchResultPane()
     }
 
     override fun changedUpdate(e: DocumentEvent) {
     }
 
     override fun removeUpdate(e: DocumentEvent) {
+        tagger.isTagSaved = false
 //        if (!isReplace && text.isNotEmpty()) {
 //            var pos = caretPosition - e.length
 //            if (pos >= text.length) pos = text.length-1
@@ -154,6 +160,8 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
     }
 
     override fun mousePressed(e: MouseEvent) {
+        if (e != null && text == defaultMessage)
+            text = ""
     }
 
     override fun mouseReleased(e: MouseEvent) {

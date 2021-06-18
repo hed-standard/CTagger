@@ -26,6 +26,8 @@ class FieldList(val tagger: CTagger): JComboBox<String>() {
                     // get unique event codes
                     tagger.eventCodeList.codeSet = fieldAndUniqueCodeMap[selectedItem!!]!!
                 }
+                // reset saving status
+                tagger.isTagSaved = true
             }
         }
     }

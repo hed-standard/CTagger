@@ -26,7 +26,15 @@ fun main() {
 class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: Boolean, var filename:String, var jsonString:String, var isScratch:Boolean) {
     var isVerbose = false
     var loader: TaggerLoader? = null
-    private val frame = JFrame("CTAGGER")
+    var isTagSaved:Boolean = true
+        set(value) {
+            field = value
+            if (value)
+                hideUnsavedMessage()
+            else
+                showUnsavedMessage()
+        }
+    val frame = JFrame("CTagger")
     var hedVersion = ""
     lateinit var unitClasses: Set<UnitClassXmlModel>
     lateinit var unitModifiers: ArrayList<UnitModifierXmlModel>
@@ -40,6 +48,8 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
     lateinit var searchResultPanel: JScrollPane
     lateinit var schemaView: SchemaView
     private val inputPane = JLayeredPane()
+    private var centerPane = JPanel()
+    private var unsavedLabel = JLabel()
 
     init {
         getHedXmlModel()
@@ -87,7 +97,7 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         UIManager.put("OptionPane.background", Style.BLUE_MEDIUM)
         SwingUtilities.updateComponentTreeUI(frame)
         frame.pack()
-        frame.isResizable = false
+//        frame.isResizable = false
         frame.isVisible = true
 
         // start saving thread
@@ -190,7 +200,7 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
      * Add field level and tag Input panes
      */
     private fun addCenterPane(mainPane: Container) {
-        val centerPane = JPanel(GridBagLayout())
+        centerPane = JPanel(GridBagLayout())
         var c = GridBagConstraints()
         c.gridx = 0
         c.gridy = 0
@@ -233,8 +243,9 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         c.gridwidth = 1
         c.anchor = GridBagConstraints.LINE_END
         c.insets = Insets(0,10,0,10)
-        val saveTagBtn = JButton("Save current tags")
+        val saveTagBtn = JButton("Save annotations")
         saveTagBtn.addActionListener {
+            isTagSaved = true
             try {
                 val curField = fieldList.selectedItem.toString()
                 val fieldMap = fieldList.fieldMap
@@ -251,12 +262,17 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         }
         centerPane.add(saveTagBtn, c)
 
+        unsavedLabel = JLabel("(Changes unsaved)")
+        unsavedLabel.font = Font("Sans Serif", Font.PLAIN, 14)
+        unsavedLabel.border = EmptyBorder(0,0,0,0)
+        unsavedLabel.foreground = Color.RED
+
         c = GridBagConstraints()
-        c.gridx = 3
+        c.gridx = 5
         c.gridy = 0
-        c.gridwidth = 3
+        c.gridwidth = 1
         c.anchor = GridBagConstraints.LINE_END
-        c.insets = Insets(0,30,0,10)
+        c.insets = Insets(0,10,0,0)
         val showSchemaBtn = JButton("Show HED schema")
         showSchemaBtn.addActionListener {
             schemaView.show()
@@ -267,7 +283,7 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         c.fill = GridBagConstraints.HORIZONTAL
         c.gridx = 2
         c.gridy = 1
-        c.gridwidth = 4
+        c.gridwidth = 5
         c.weightx = 1.0
         c.insets = Insets(0,0,0,5)
         inputPane.layout = FlowLayout()
@@ -291,6 +307,29 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         mainPane.add(centerPane, BorderLayout.CENTER)
     }
 
+    fun showUnsavedMessage() {
+        SwingUtilities.invokeLater {
+            val c = GridBagConstraints()
+            c.gridx = 4
+            c.gridy = 0
+            c.gridwidth = 1
+            c.anchor = GridBagConstraints.LINE_END
+            c.insets = Insets(0,0,0,0)
+            centerPane.add(unsavedLabel, c)
+            centerPane.revalidate()
+            centerPane.repaint()
+            frame.pack()
+            frame.repaint()
+        }
+    }
+
+    fun hideUnsavedMessage() {
+        SwingUtilities.invokeLater {
+            centerPane.remove(unsavedLabel)
+            centerPane.revalidate()
+            centerPane.repaint()
+        }
+    }
     private fun addDoneBtn(mainPane: Container) {
         val btnPane = JPanel()
         val cancelBtn = JButton("Cancel")

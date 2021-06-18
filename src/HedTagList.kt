@@ -3,6 +3,9 @@ import javax.swing.DefaultListModel
 import javax.swing.JList
 import javax.swing.JScrollPane
 
+/**
+ * Show search result
+ */
 class HedTagList(private val tagger: CTagger, private val tags: List<String>, private val hedInput: HedTagInput) : JList<String>(), FocusListener {
     private val listModel = DefaultListModel<String>()
 
