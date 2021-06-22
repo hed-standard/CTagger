@@ -44,7 +44,7 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
     val fieldList = FieldList(this)
     var eventCodeList: EventCodeList
     lateinit var hedTagInput: HedTagInput
-    lateinit var hedTagList: HedTagList
+    lateinit var searchResultTagList: SearchResultTagList
     lateinit var searchResultPanel: JScrollPane
     lateinit var schemaView: SchemaView
     private val inputPane = JLayeredPane()
@@ -97,7 +97,7 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         UIManager.put("OptionPane.background", Style.BLUE_MEDIUM)
         SwingUtilities.updateComponentTreeUI(frame)
         frame.pack()
-//        frame.isResizable = false
+        frame.isResizable = false
         frame.isVisible = true
 
         // start saving thread
@@ -279,6 +279,8 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         }
         centerPane.add(showSchemaBtn, c)
 
+        inputPane.preferredSize = Dimension(500,300)
+
         c = GridBagConstraints()
         c.fill = GridBagConstraints.HORIZONTAL
         c.gridx = 2
@@ -286,23 +288,24 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         c.gridwidth = 5
         c.weightx = 1.0
         c.insets = Insets(0,0,0,5)
-        inputPane.layout = FlowLayout()
+//        inputPane.layout = FlowLayout()
         hedTagInput = HedTagInput(this)
         hedTagInput.preferredSize = Dimension(500,300)
         val tagInputPaneScrollPane = JScrollPane(hedTagInput)
         tagInputPaneScrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER // Force wrapping. Deduced from: http://java-sl.com/wrap.html
         tagInputPaneScrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        tagInputPaneScrollPane.location = Point(0,0)
-        inputPane.add(tagInputPaneScrollPane, 0)
+        tagInputPaneScrollPane.bounds = Rectangle(10,0,hedTagInput.preferredSize.width, hedTagInput.preferredSize.height)
+        inputPane.add(tagInputPaneScrollPane, Integer(0), 1)
         centerPane.add(inputPane, c)
 
-        hedTagList = HedTagList(this, tags, hedTagInput)
-        searchResultPanel = JScrollPane(hedTagList)
+        searchResultTagList = SearchResultTagList(this, tags, hedTagInput)
+        searchResultPanel = JScrollPane(searchResultTagList)
         searchResultPanel.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
         searchResultPanel.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        searchResultPanel.setBounds(0, 0, 480,150)
-        searchResultPanel.location = Point(30,150)
+        searchResultPanel.setBounds(10, 10, 480,150)
+//        searchResultPanel.location = Point(30,150)
         searchResultPanel.isVisible = false
+        inputPane.add(searchResultPanel, Integer(0), 0)
 
         mainPane.add(centerPane, BorderLayout.CENTER)
     }
@@ -417,11 +420,11 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
 
     fun showSearchResultPane(x: Int, y: Int) {
         SwingUtilities.invokeLater {
-            searchResultPanel.location = Point(x, y)
+            searchResultPanel.bounds = Rectangle(x+5, y, 480,150)
+            searchResultPanel.isVisible = true
             searchResultPanel.revalidate()
             searchResultPanel.repaint()
-            searchResultPanel.isVisible = true
-            inputPane.add(searchResultPanel, Integer(1),0)
+            inputPane.add(searchResultPanel, Integer(0),0)
             inputPane.repaint()
         }
     }

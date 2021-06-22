@@ -3,9 +3,6 @@ import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
-import java.io.StreamTokenizer
-import java.io.StringReader
-import java.text.BreakIterator
 import javax.swing.JTextPane
 import javax.swing.SwingUtilities
 import javax.swing.event.DocumentEvent
@@ -14,10 +11,9 @@ import javax.swing.text.BadLocationException
 import javax.swing.text.SimpleAttributeSet
 import javax.swing.text.StyleConstants
 import javax.swing.text.Utilities
-import kotlin.text.Regex
 
 class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, KeyListener, MouseListener {
-    private var isReplace = false
+    private var needParsing = true
     private val validTagPattern = "\\w|\\+|\\^|-|\\s|\\d|/"
     private var caretPos = 0
     private val defaultMessage = "Select field level and start tagging by typing here or click on \"Show HED schema\""
@@ -25,7 +21,9 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
         document.addDocumentListener(this)
         addKeyListener(this)
         addMouseListener(this)
+        needParsing = false
         text = defaultMessage
+        needParsing = true
         tagger.isTagSaved = true
     }
 
@@ -37,49 +35,36 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
      *      2.2. If tag doesn't exist, hide result window (if on) and red highlight the word
      */
     override fun insertUpdate(e: DocumentEvent) {
-        caretPos = caretPosition
-        tagger.hideSearchResultPane()
-        tagger.isTagSaved = false
-//        val result = getTagAtPos(caretPosition)
-//
-//        if (result != null) {
-//            val isValid = tagger.hedValidator.validateEntry(text.substring(result.first, result.second))
-//            if (isValid && !tagger.hedTagList.isEmpty()) {
-//                try {
-//                    val pos = modelToView(caretPosition)
-//                    tagger.showSearchResultPane(10, pos.y + 25) // put the search result at the left most but under current caret
-//                }
-//                catch (e: Exception) {
-//                    print("Exception " + e.message)
-//                    e.printStackTrace()
-//                }
-////                blackHighlight(result.first, result.second)
-////                requestFocusInWindow()
-//            }
-//            else {
-//                tagger.hideSearchResultPane()
-////                redHighlight(result.first, result.second)
-//            }
-//        }
-//        else
-//            tagger.hideSearchResultPane()
+        if (needParsing) {
+            caretPos = caretPosition
+            tagger.isTagSaved = false
+            val result = getTagAtPos(caretPosition)
+
+            if (result != null) {
+                val enteredText = text.substring(result.first, result.second)
+                findMatchingTags(enteredText)
+                if (!tagger.searchResultTagList.isEmpty()) {
+                    try {
+                        val pos = modelToView(caretPosition)
+                        tagger.showSearchResultPane(10, pos.y + 25) // put the search result at the left most but under current caret
+                    } catch (e: Exception) {
+                        print("Exception " + e.message)
+                        e.printStackTrace()
+                    }
+                } else {
+                    tagger.hideSearchResultPane()
+                }
+            } else
+                tagger.hideSearchResultPane()
+        }
     }
 
     override fun changedUpdate(e: DocumentEvent) {
     }
 
     override fun removeUpdate(e: DocumentEvent) {
-        tagger.isTagSaved = false
-//        if (!isReplace && text.isNotEmpty()) {
-//            var pos = caretPosition - e.length
-//            if (pos >= text.length) pos = text.length-1
-//            val result = getWordAtPos(pos)
-//            if (result != null) {
-//                tagger.hideSearchResultPane()
-////                val isValid = tagger.hedValidator.validateEntry(text.substring(result.first, result.second))
-////                if (!isValid) redHighlight(result.first, result.second) else blackHighlight(result.first, result.second)
-//            }
-//        }
+        if (needParsing)
+            tagger.isTagSaved = false
     }
 
     // black highlight compatible input
@@ -132,13 +117,25 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
             if (result != null) {
                 val nodes = selectedTag.split('/') // short-form tag
                 select(result.first, result.second) // prepare for next statement
-                isReplace = true // tell removeUpdate to ignore
+                needParsing = false // tell removeUpdate to ignore
                 if (nodes.last() == "#") replaceSelection(nodes[nodes.size - 2] + "/") else replaceSelection(nodes.last()) //TODO need to account for whether takeValues is enforced
-                isReplace = false // replace done. Reset
+                needParsing = true // replace done. Reset
                 grabFocus()
             }
         } catch (e: BadLocationException) {
             System.err.println(e)
+        }
+    }
+
+    private fun findMatchingTags(entry: String) {
+        val tags = tagger.tags
+        val matchedTags = tags.filter {
+//            // parse takeValues node if applicable
+//            val splitted = target.split('/')
+            it.contains(entry, true)// || (splitted.size >= 2 && it.contains(splitted[splitted.size-2] + "/#", true))
+        } // beautiful syntax comparing to Java!
+        if (matchedTags.isNotEmpty()) {
+            tagger.searchResultTagList.addTagsToList(matchedTags)
         }
     }
 
@@ -149,8 +146,8 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
     }
     override fun keyPressed(e: KeyEvent?) {
         if (e != null && e.keyCode == KeyEvent.VK_DOWN && tagger.searchResultPanel.isVisible) {
-            tagger.hedTagList.requestFocusInWindow()
-            tagger.hedTagList.selectedIndex = 0
+            tagger.searchResultTagList.requestFocusInWindow()
+            tagger.searchResultTagList.selectedIndex = 0
             tagger.searchResultPanel.revalidate()
             tagger.searchResultPanel.repaint()
         }
@@ -181,9 +178,9 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
 
     fun resume(s: String?) {
         if (s != null) {
-            isReplace = true
+            needParsing = false
             text = s
-            isReplace = false
+            needParsing = true
         }
     }
 

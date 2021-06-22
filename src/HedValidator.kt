@@ -26,7 +26,7 @@ class HedValidator(private val schema: HashMap<String, TagModel>, private val ta
                     val tagModel = schema[parentNode]!!
                     if (tagModel.hasAttribute("childRequired")) {
                         if (tagModel.hasAttribute("takesValue") || schema.containsKey("$parentNode/#")) { // sometimes takesValue attribute is set in the # node
-                            tagger.hedTagList.clear()
+                            tagger.searchResultTagList.clear()
                             val valueNode = schema["$parentNode/#"]!! // all takesValue nodes are followed by a #
                             return validateValueInput(valueInput, valueNode)
                         }
@@ -113,7 +113,7 @@ class HedValidator(private val schema: HashMap<String, TagModel>, private val ta
         val matchedTags = findMatchingTags(entry)
         // if valid partial entry, add matching tags to search result box
         if (matchedTags.isNotEmpty()) {
-            tagger.hedTagList.addTagsToList(matchedTags)
+            tagger.searchResultTagList.addTagsToList(matchedTags)
             return true
         }
         return false
