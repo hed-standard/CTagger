@@ -1,5 +1,7 @@
 # CTagger
-CTagger GUI for annotating datasets using Hierarchical Event Descriptors
+CTagger GUI for annotating datasets using Hierarchical Event Descriptors. 
+
+Both HED-3G schema and the software is in beta mode so bug report is welcomed. 
 
 ## Installation
 - Check to see that you have Java installed. Linux usually comes with OpenJDK (open source version of JDK) already installed. We have tested up to Java version 11 in Mac and Ubuntu. Executing `java -version` on terminal should return something similar to
@@ -20,7 +22,7 @@ For more guides and tutorials, check out the [Wiki](https://github.com/hed-stand
 
 ## Future roadmap
 * Add validation capacity by integrating HED validator web service.
-* Add more features for the schema browser, including displaying node attributes, ability to view unit classes, search and scroll to a specific node.
+* Add more features for the schema browser, ability to view unit classes, search and scroll to a specific node.
 * Add more suggestion features, including:
   * Make use of suggested-tag and related-tag attributes.
   * Auto suggest unit based on unit class.
