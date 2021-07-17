@@ -55,18 +55,6 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         getHedXmlModel()
         eventCodeList = EventCodeList(this)
 
-        if (isTSV)
-            importBIDSEventTSV(File(filename))
-        else if (isJson)
-            if (filename.isEmpty() && jsonString.isNotEmpty())
-                importBIDSEventJson(jsonString)
-            else
-                importBIDSEventJson(File(filename))
-        else {
-            isScratch = true
-            importBIDSEventJson("{'none': {}}")
-        }
-
         frame.setSize(1000, 800)
         if (isStandalone)
             frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
@@ -91,6 +79,20 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         addFieldSelectionPane(mainPane)
         addCenterPane(mainPane)
         addDoneBtn(mainPane)
+
+        hedTagInput.setNoParsing()
+        if (isTSV)
+            importBIDSEventTSV(File(filename))
+        else if (isJson)
+            if (filename.isEmpty() && jsonString.isNotEmpty())
+                importBIDSEventJson(jsonString)
+            else
+                importBIDSEventJson(File(filename))
+        else {
+            isScratch = true
+            importBIDSEventJson("{'none': {}}")
+        }
+        hedTagInput.setParsing()
 
         // set default background color to all panels and dialogs
         UIManager.put("Panel.background", Style.BLUE_MEDIUM)
@@ -368,8 +370,8 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
      * and build schema model
      * @param version   Version of the schema
      */
-    private fun getHedXmlModel(version:String = "HED8.0.0-beta.1a") {
-        val schemaLink = URL("https://raw.githubusercontent.com/hed-standard/hed-specification/master/hedxsd-test/${version}.xml")
+    private fun getHedXmlModel(version:String = "HED8.0.0-beta.4") {
+        val schemaLink = URL("https://raw.githubusercontent.com/hed-standard/hed-specification/master/hedxml-test/${version}.xml")
         val xmlData = schemaLink.readText()
         val hedXmlModel: HedXmlModel
         try {
@@ -702,6 +704,9 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
             // initialize/update tagging GUI
             eventCodeList.codeSet = fieldList.fieldAndUniqueCodeMap[fieldList.selectedItem!!]!! // add codes of current field
             eventCodeList.selectedIndex = 0 // select first code in the list
+            val hedString = fieldList.fieldMap[fieldList.selectedItem!!]!![eventCodeList.codeSet[0]]!!
+            if (hedString.isNotEmpty() )
+                hedTagInput.text = hedString
             fieldList.repaint()
         }
         catch (e: Exception) {

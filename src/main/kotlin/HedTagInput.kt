@@ -22,7 +22,12 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
         addKeyListener(this)
         addMouseListener(this)
         needParsing = false
+        val prevAttribute = characterAttributes
+        val attributeSet = SimpleAttributeSet()
+        StyleConstants.setItalic(attributeSet, true)
+        setCharacterAttributes(attributeSet, true)
         text = defaultMessage
+        setCharacterAttributes(prevAttribute, true)
         needParsing = true
         tagger.isTagSaved = true
     }
@@ -186,5 +191,13 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
 
     fun getCleanHEDString(): String {
         return text.trim().trim(',')
+    }
+
+    fun setNoParsing() {
+        needParsing = false
+    }
+
+    fun setParsing() {
+        needParsing = true
     }
 }
