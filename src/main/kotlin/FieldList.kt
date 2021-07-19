@@ -26,8 +26,6 @@ class FieldList(val tagger: CTagger): JComboBox<String>() {
                     // get unique event codes
                     tagger.eventCodeList.codeSet = fieldAndUniqueCodeMap[selectedItem!!]!!
                 }
-                // reset saving status
-                tagger.isTagSaved = true
             }
         }
     }
@@ -96,6 +94,15 @@ class FieldList(val tagger: CTagger): JComboBox<String>() {
         }
 
     }
+
+    fun getHedString(field: String, code:String):String {
+        if (fieldMap.containsKey(field)) {
+            if (fieldMap[field]!!.containsKey(code))
+                return fieldMap[field]!![code]!!
+        }
+        return ""
+    }
+
     fun isEmpty(): Boolean {
         return fieldMap.isEmpty()
     }

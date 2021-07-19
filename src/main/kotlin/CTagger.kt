@@ -26,28 +26,18 @@ fun main() {
 class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: Boolean, var filename:String, var jsonString:String, var isScratch:Boolean) {
     var isVerbose = false
     var loader: TaggerLoader? = null
-    var isTagSaved:Boolean = true
-        set(value) {
-            field = value
-            if (value)
-                hideUnsavedMessage()
-            else
-                showUnsavedMessage()
-        }
-    val frame = JFrame("CTagger")
+    private val frame = JFrame("CTagger")
     var hedVersion = ""
     lateinit var unitClasses: Set<UnitClassXmlModel>
     lateinit var unitModifiers: ArrayList<UnitModifierXmlModel>
-    val tags: MutableList<String> = mutableListOf()
-    val schema: HashMap<String, TagModel> = HashMap()
-    lateinit var hedValidator: HedValidator
+    val tags = mutableListOf<String>()
+    val schema = HashMap<String, TagModel>()
+    private lateinit var hedValidator: HedValidator
     val fieldList = FieldList(this)
     var eventCodeList: EventCodeList
     lateinit var hedTagInput: HedTagInput
-    lateinit var searchResultTagList: SearchResultTagList
-    lateinit var searchResultPanel: JScrollPane
-    lateinit var schemaView: SchemaView
-    private val inputPane = JLayeredPane()
+    private lateinit var schemaView: SchemaView
+    lateinit var inputPane: InputLayeredPane
     private var centerPane = JPanel()
     private var unsavedLabel = JLabel()
 
@@ -80,7 +70,7 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         addCenterPane(mainPane)
         addDoneBtn(mainPane)
 
-        hedTagInput.setNoParsing()
+//        hedTagInput.setNoParsing()
         if (isTSV)
             importBIDSEventTSV(File(filename))
         else if (isJson)
@@ -92,7 +82,7 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
             isScratch = true
             importBIDSEventJson("{'none': {}}")
         }
-        hedTagInput.setParsing()
+//        hedTagInput.setParsing()
 
         // set default background color to all panels and dialogs
         UIManager.put("Panel.background", Style.BLUE_MEDIUM)
@@ -106,19 +96,6 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
 //        timer(name = "Save tags", period = 500) {
 //            if (isVerbose) println("Saving tags")
 //            // save current tags
-//            try {
-//                val curField = fieldList.selectedItem.toString()
-//                val fieldMap = fieldList.fieldMap
-//                if (curField != null && fieldMap.containsKey(curField)) {
-//                    val codeMap = fieldMap[curField]
-//                    val selected = eventCodeList.selectedValue
-//                    if (selected != null && codeMap!!.containsKey(selected))
-//                        codeMap!![selected] = hedTagInput.getCleanHEDString()
-//                }
-//            }
-//            catch (e: Exception) {
-//                // Simply ignore and not save
-//            }
 //        }
     }
 
@@ -240,36 +217,6 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         centerPane.add(tagPanelLabel)
 
         c = GridBagConstraints()
-        c.gridx = 3
-        c.gridy = 0
-        c.gridwidth = 1
-        c.anchor = GridBagConstraints.LINE_END
-        c.insets = Insets(0,10,0,10)
-        val saveTagBtn = JButton("Save annotations")
-        saveTagBtn.addActionListener {
-            isTagSaved = true
-            try {
-                val curField = fieldList.selectedItem.toString()
-                val fieldMap = fieldList.fieldMap
-                if (curField != null && fieldMap.containsKey(curField)) {
-                    val codeMap = fieldMap[curField]
-                    val selected = eventCodeList.selectedValue
-                    if (selected != null && codeMap!!.containsKey(selected))
-                        codeMap!![selected] = hedTagInput.getCleanHEDString()
-                }
-            }
-            catch (e: Exception) {
-                // Simply ignore and not save
-            }
-        }
-        centerPane.add(saveTagBtn, c)
-
-        unsavedLabel = JLabel("(Changes unsaved)")
-        unsavedLabel.font = Font("Sans Serif", Font.PLAIN, 14)
-        unsavedLabel.border = EmptyBorder(0,0,0,0)
-        unsavedLabel.foreground = Color.RED
-
-        c = GridBagConstraints()
         c.gridx = 5
         c.gridy = 0
         c.gridwidth = 1
@@ -281,6 +228,7 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         }
         centerPane.add(showSchemaBtn, c)
 
+        inputPane = InputLayeredPane(this)
         inputPane.preferredSize = Dimension(500,300)
 
         c = GridBagConstraints()
@@ -290,51 +238,11 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         c.gridwidth = 5
         c.weightx = 1.0
         c.insets = Insets(0,0,0,5)
-//        inputPane.layout = FlowLayout()
-        hedTagInput = HedTagInput(this)
-        hedTagInput.preferredSize = Dimension(500,300)
-        val tagInputPaneScrollPane = JScrollPane(hedTagInput)
-        tagInputPaneScrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER // Force wrapping. Deduced from: http://java-sl.com/wrap.html
-        tagInputPaneScrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        tagInputPaneScrollPane.bounds = Rectangle(10,0,hedTagInput.preferredSize.width, hedTagInput.preferredSize.height)
-        inputPane.add(tagInputPaneScrollPane, Integer(0), 1)
         centerPane.add(inputPane, c)
-
-        searchResultTagList = SearchResultTagList(this, tags, hedTagInput)
-        searchResultPanel = JScrollPane(searchResultTagList)
-        searchResultPanel.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-        searchResultPanel.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        searchResultPanel.setBounds(10, 10, 480,150)
-//        searchResultPanel.location = Point(30,150)
-        searchResultPanel.isVisible = false
-        inputPane.add(searchResultPanel, Integer(0), 0)
 
         mainPane.add(centerPane, BorderLayout.CENTER)
     }
 
-    fun showUnsavedMessage() {
-        SwingUtilities.invokeLater {
-            val c = GridBagConstraints()
-            c.gridx = 4
-            c.gridy = 0
-            c.gridwidth = 1
-            c.anchor = GridBagConstraints.LINE_END
-            c.insets = Insets(0,0,0,0)
-            centerPane.add(unsavedLabel, c)
-            centerPane.revalidate()
-            centerPane.repaint()
-            frame.pack()
-            frame.repaint()
-        }
-    }
-
-    fun hideUnsavedMessage() {
-        SwingUtilities.invokeLater {
-            centerPane.remove(unsavedLabel)
-            centerPane.revalidate()
-            centerPane.repaint()
-        }
-    }
     private fun addDoneBtn(mainPane: Container) {
         val btnPane = JPanel()
         val cancelBtn = JButton("Cancel")
@@ -409,25 +317,6 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
             }
             tags.add(tagPath)
             populateTagSets(tagModel, tagXmlModel.tags, tagModel.hasAttribute("extensionAllowed"))
-        }
-    }
-
-    fun hideSearchResultPane() {
-        SwingUtilities.invokeLater {
-            searchResultPanel.isVisible = false
-            inputPane.remove(searchResultPanel)
-            inputPane.repaint()
-        }
-    }
-
-    fun showSearchResultPane(x: Int, y: Int) {
-        SwingUtilities.invokeLater {
-            searchResultPanel.bounds = Rectangle(x+5, y, 480,150)
-            searchResultPanel.isVisible = true
-            searchResultPanel.revalidate()
-            searchResultPanel.repaint()
-            inputPane.add(searchResultPanel, Integer(0),0)
-            inputPane.repaint()
         }
     }
 
@@ -704,9 +593,6 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
             // initialize/update tagging GUI
             eventCodeList.codeSet = fieldList.fieldAndUniqueCodeMap[fieldList.selectedItem!!]!! // add codes of current field
             eventCodeList.selectedIndex = 0 // select first code in the list
-            val hedString = fieldList.fieldMap[fieldList.selectedItem!!]!![eventCodeList.codeSet[0]]!!
-            if (hedString.isNotEmpty() )
-                hedTagInput.text = hedString
             fieldList.repaint()
         }
         catch (e: Exception) {
@@ -738,6 +624,44 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
             JOptionPane.showMessageDialog(frame, "Error importing", "Import error", JOptionPane.ERROR_MESSAGE)
         }
     }
+
+    /** Functions for fieldMap handling **/
+    fun getHedString(field: String, code: String): String {
+        return fieldList.getHedString(field, code)
+    }
+    /*****/
+
+    /** Delegator methods for inputPane **/
+    fun hideSearchResultPane() {
+        inputPane.hideSearchResultPane()
+    }
+
+    fun showSearchResultPane(x: Int, y: Int) {
+        inputPane.showSearchResultPane(x,y)
+    }
+
+    fun isSearchResultEmpty(): Boolean {
+        return inputPane.isSearchResultEmpty()
+    }
+
+    fun addTagsToSearchResult(matchedTags: List<String>) {
+        inputPane.addTagsToSearchResult(matchedTags)
+
+    }
+
+    fun isSearchResultVisible(): Boolean {
+        return inputPane.isSearchResultVisible()
+    }
+
+    fun showSearchResultWhenKeyPressed() {
+        inputPane.showSearchResultWhenDownKeyPressed()
+    }
+
+    fun clearSearchResult() {
+        inputPane.clearSearchResult()
+    }
+    /** **/
+
     /**
      * For deserialization of json
      */

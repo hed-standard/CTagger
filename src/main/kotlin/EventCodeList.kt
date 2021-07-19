@@ -1,8 +1,8 @@
+import java.awt.Dimension
+import java.awt.Rectangle
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.DefaultListModel
-import javax.swing.JList
-import javax.swing.JOptionPane
+import javax.swing.*
 
 class EventCodeList(val tagger: CTagger) : JList<String>() {
     private val listModel = DefaultListModel<String>()
@@ -45,6 +45,14 @@ class EventCodeList(val tagger: CTagger) : JList<String>() {
 //                    else {
                         val curField = tagger.fieldList.selectedItem.toString()
                         val codeMap = tagger.fieldList.fieldMap[curField]
+
+                        // create new HedTagInput pertaining to the curField-curCode pair
+                        val hedTagInput = HedTagInput(tagger, curField, selected)
+                        tagger.inputPane.newTagInput(hedTagInput)
+
+                        // set hedTagInput to new text
+                        if (codeMap != null && codeMap.containsKey(selected))
+                            tagger.hedTagInput.resume(codeMap[selected])
                         // save current tags
 //                        if (codeMap != null && prevSelected != null) {
 //                            codeMap[prevSelected] = tagger.hedTagInput.getCleanHEDString()
@@ -52,14 +60,10 @@ class EventCodeList(val tagger: CTagger) : JList<String>() {
 
                         eList.prevSelected = selected
 
-                        // set hedTagInput to new text
-                        if (codeMap != null && codeMap.containsKey(selected))
-                            tagger.hedTagInput.resume(codeMap[selected])
 
                         // hide search result pane
                         tagger.hideSearchResultPane()
                     }
-                    tagger.isTagSaved = true
                 }
         }
     }

@@ -39,7 +39,7 @@ class SearchResultTagList(private val tagger: CTagger, private val tags: List<St
     fun tagSelected() {
         val selectedTag = selectedValue
         hedInput.replaceWordAtCaretWithTag(selectedTag)
-        tagger.hideSearchResultPane()
+        tagger.inputPane.hideSearchResultPane()
     }
 
     override fun focusGained(e: FocusEvent?) {
@@ -47,7 +47,7 @@ class SearchResultTagList(private val tagger: CTagger, private val tags: List<St
     }
 
     override fun focusLost(e: FocusEvent?) {
-        tagger.hideSearchResultPane()
+        tagger.inputPane.hideSearchResultPane()
     }
 
     fun isEmpty() : Boolean{
@@ -74,8 +74,8 @@ class SearchResultTagList(private val tagger: CTagger, private val tags: List<St
                     KeyEvent.VK_ENTER -> tagList.tagSelected()
                 }
 //                print("here")
-                tagger.searchResultPanel.revalidate()
-                tagger.searchResultPanel.repaint()
+                tagger.inputPane.searchResultPanel.revalidate()
+                tagger.inputPane.searchResultPanel.repaint()
             }
         }
     }

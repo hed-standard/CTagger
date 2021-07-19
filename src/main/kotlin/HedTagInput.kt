@@ -11,25 +11,38 @@ import javax.swing.text.BadLocationException
 import javax.swing.text.SimpleAttributeSet
 import javax.swing.text.StyleConstants
 import javax.swing.text.Utilities
+import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.*
 
-class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, KeyListener, MouseListener {
+@OptIn(DelicateCoroutinesApi::class)
+class HedTagInput(private val tagger: CTagger, private val curField: String, private val curCode: String) : JTextPane(), DocumentListener, KeyListener, MouseListener {
     private var needParsing = true
-    private val validTagPattern = "\\w|\\+|\\^|-|\\s|\\d|/"
+//    private val validTagPattern = "\\w|\\+|\\^|-|\\s|\\d|/"
     private var caretPos = 0
     private val defaultMessage = "Select field level and start tagging by typing here or click on \"Show HED schema\""
+    private val job: CoroutineContext.Element
     init {
         document.addDocumentListener(this)
         addKeyListener(this)
         addMouseListener(this)
-        needParsing = false
         val prevAttribute = characterAttributes
         val attributeSet = SimpleAttributeSet()
         StyleConstants.setItalic(attributeSet, true)
         setCharacterAttributes(attributeSet, true)
-        text = defaultMessage
+
+        // set default string to display
+        if (tagger.getHedString(curField, curCode).isNotEmpty())
+            resume(tagger.getHedString(curField, curCode))
+        else
+            resume(defaultMessage)
+//        text = defaultMessage
         setCharacterAttributes(prevAttribute, true)
-        needParsing = true
-        tagger.isTagSaved = true
+//        needParsing = true
+        tagger.hedTagInput = this
+
+        job = GlobalScope.async {
+            autosave()
+        }
     }
 
     /**
@@ -42,13 +55,12 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
     override fun insertUpdate(e: DocumentEvent) {
         if (needParsing) {
             caretPos = caretPosition
-            tagger.isTagSaved = false
             val result = getTagAtPos(caretPosition)
 
             if (result != null) {
                 val enteredText = text.substring(result.first, result.second)
                 findMatchingTags(enteredText)
-                if (!tagger.searchResultTagList.isEmpty()) {
+                if (!tagger.isSearchResultEmpty()) {
                     try {
                         val pos = modelToView(caretPosition)
                         tagger.showSearchResultPane(10, pos.y + 25) // put the search result at the left most but under current caret
@@ -68,8 +80,6 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
     }
 
     override fun removeUpdate(e: DocumentEvent) {
-        if (needParsing)
-            tagger.isTagSaved = false
     }
 
     // black highlight compatible input
@@ -140,7 +150,7 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
             it.contains(entry, true)// || (splitted.size >= 2 && it.contains(splitted[splitted.size-2] + "/#", true))
         } // beautiful syntax comparing to Java!
         if (matchedTags.isNotEmpty()) {
-            tagger.searchResultTagList.addTagsToList(matchedTags)
+            tagger.addTagsToSearchResult(matchedTags)
         }
     }
 
@@ -150,20 +160,18 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
     override fun keyTyped(e: KeyEvent?) {
     }
     override fun keyPressed(e: KeyEvent?) {
-        if (e != null && e.keyCode == KeyEvent.VK_DOWN && tagger.searchResultPanel.isVisible) {
-            tagger.searchResultTagList.requestFocusInWindow()
-            tagger.searchResultTagList.selectedIndex = 0
-            tagger.searchResultPanel.revalidate()
-            tagger.searchResultPanel.repaint()
+        if (e != null && e.keyCode == KeyEvent.VK_DOWN && tagger.isSearchResultVisible()) {
+            tagger.showSearchResultWhenKeyPressed()
         }
-        else if (e != null && (e.keyCode == KeyEvent.VK_ENTER || e.keyCode == KeyEvent.VK_ESCAPE) && tagger.searchResultPanel.isVisible) {
+        else if (e != null && (e.keyCode == KeyEvent.VK_ENTER || e.keyCode == KeyEvent.VK_ESCAPE) && tagger.isSearchResultVisible()) {
             tagger.hideSearchResultPane()
         }
     }
 
     override fun mousePressed(e: MouseEvent) {
-        if (e != null && text == defaultMessage)
+        if (text == defaultMessage) {
             text = ""
+        }
     }
 
     override fun mouseReleased(e: MouseEvent) {
@@ -176,7 +184,7 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
     }
 
     override fun mouseClicked(e: MouseEvent) {
-        if (e != null && tagger.searchResultPanel.isVisible) {
+        if (e != null && tagger.isSearchResultVisible()) {
             tagger.hideSearchResultPane()
         }
     }
@@ -199,5 +207,28 @@ class HedTagInput(private val tagger: CTagger) : JTextPane(), DocumentListener, 
 
     fun setParsing() {
         needParsing = true
+    }
+
+    private suspend fun autosave() = coroutineScope {
+        launch {
+            while (true) {
+                try {
+                    val fieldMap = tagger.fieldList.fieldMap
+                    if (curField != null && fieldMap.containsKey(curField)) {
+                        val codeMap = fieldMap[curField]
+                        if (curCode != null && codeMap!!.containsKey(curCode))
+                            codeMap!![curCode] = getCleanHEDString()
+                    }
+                }
+                catch (e: Exception) {
+                    // Simply ignore and not save
+                }
+            }
+        }
+    }
+
+    fun cancelAutosave() {
+        println("Canceling")
+        job.cancel()
     }
 }
