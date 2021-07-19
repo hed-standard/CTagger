@@ -35,7 +35,6 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
     private lateinit var hedValidator: HedValidator
     val fieldList = FieldList(this)
     var eventCodeList: EventCodeList
-    lateinit var hedTagInput: HedTagInput
     private lateinit var schemaView: SchemaView
     lateinit var inputPane: InputLayeredPane
     private var centerPane = JPanel()

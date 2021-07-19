@@ -25,8 +25,8 @@ class EventCodeList(val tagger: CTagger) : JList<String>() {
     }
     private class EventCodeListListener(val tagger:CTagger): MouseAdapter() {
         override fun mouseClicked(e: MouseEvent?) {
-                super.mouseClicked(e)
-                if (e != null) {
+            // TODO fix click event called twice issue
+                if (e != null && e.clickCount == 1) {
                     val eList = e.source as EventCodeList
                     if (!eList.valueIsAdjusting) {
                         val tagger = eList.tagger
@@ -43,16 +43,16 @@ class EventCodeList(val tagger: CTagger) : JList<String>() {
 //                        eList.setSelectedValue(prevSelected, true)
 //                    }
 //                    else {
+                        // creating new one
                         val curField = tagger.fieldList.selectedItem.toString()
                         val codeMap = tagger.fieldList.fieldMap[curField]
 
                         // create new HedTagInput pertaining to the curField-curCode pair
                         val hedTagInput = HedTagInput(tagger, curField, selected)
-                        tagger.inputPane.newTagInput(hedTagInput)
 
                         // set hedTagInput to new text
                         if (codeMap != null && codeMap.containsKey(selected))
-                            tagger.hedTagInput.resume(codeMap[selected])
+                            tagger.inputPane.resume(codeMap[selected])
                         // save current tags
 //                        if (codeMap != null && prevSelected != null) {
 //                            codeMap[prevSelected] = tagger.hedTagInput.getCleanHEDString()

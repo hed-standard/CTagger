@@ -9,26 +9,29 @@ class InputLayeredPane(private val tagger:CTagger) : JLayeredPane() {
     var inputScrollPane: JScrollPane = JScrollPane()
     var searchResultPanel: JScrollPane = JScrollPane()
     var searchResultTagList: SearchResultTagList? = null
+    var hedTagInput: HedTagInput? = null
     init {
         layout = FlowLayout()
     }
 
-    fun newTagInput(hedTagInput: HedTagInput) {
+    fun newTagInput(tagInput: HedTagInput) {
+        hedTagInput?.cancelAutosave()
+
+        hedTagInput = tagInput
         // remove old GUI. Will garbage collector automatically handle them?
         remove(inputScrollPane)
         remove(searchResultPanel)
-        tagger.hedTagInput.cancelAutosave()
 
         // add new HedTagInput to GUI
         SwingUtilities.invokeLater {
-            hedTagInput.preferredSize = Dimension(500,300)
+            hedTagInput!!.preferredSize = Dimension(500,300)
             inputScrollPane = JScrollPane(hedTagInput)
             inputScrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER // Force wrapping. Deduced from: http://java-sl.com/wrap.html
             inputScrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-            inputScrollPane.bounds = Rectangle(10,0,hedTagInput.preferredSize.width, hedTagInput.preferredSize.height)
+            inputScrollPane.bounds = Rectangle(10,0,hedTagInput!!.preferredSize.width, hedTagInput!!.preferredSize.height)
             add(inputScrollPane, Integer(0), 1)
 
-            searchResultTagList = SearchResultTagList(tagger, tagger.tags, hedTagInput)
+            searchResultTagList = SearchResultTagList(tagger, tagger.tags, hedTagInput!!)
             searchResultPanel = JScrollPane(searchResultTagList)
             searchResultPanel.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
             searchResultPanel.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
@@ -81,6 +84,17 @@ class InputLayeredPane(private val tagger:CTagger) : JLayeredPane() {
 
     fun clearSearchResult() {
         searchResultTagList?.clear()
+    }
+
+    fun resume(s:String?) {
+        if (s != null)
+            hedTagInput?.resume(s)
+    }
+
+    fun insertTagAtCaret(tag:String) {
+        val hedInputDoc = hedTagInput?.document
+        if (hedInputDoc != null && hedTagInput != null)
+            hedInputDoc.insertString(hedTagInput!!.caretPosition, tag, null)
     }
 
 }

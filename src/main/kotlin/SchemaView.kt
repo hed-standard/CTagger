@@ -100,8 +100,8 @@ class SchemaView(private val tagger: CTagger, hedRoot: TagModel) : TreeSelection
         val nodeInfo = node.userObject
         if (nodeInfo.toString() != "HED") {
             infoPane.text = nodeDescription[nodeInfo.toString()]
-            val hedInputDoc = tagger.hedTagInput.document
-            hedInputDoc.insertString(tagger.hedTagInput.caretPosition, "${if (nodeInfo.toString() == "#") node.parent.toString()+"/" else nodeInfo}, ", null)
+            val nodeString = "${if (nodeInfo.toString() == "#") node.parent.toString()+"/" else nodeInfo}, "
+            tagger.inputPane.insertTagAtCaret(nodeString)
         }
     }
     override fun valueChanged(e: TreeSelectionEvent?) {
@@ -109,8 +109,8 @@ class SchemaView(private val tagger: CTagger, hedRoot: TagModel) : TreeSelection
         val nodeInfo = node.userObject
         if (nodeInfo.toString() != "HED") {
             infoPane.text = nodeDescription[nodeInfo.toString()]
-            val hedInputDoc = tagger.hedTagInput.document
-            hedInputDoc.insertString(tagger.hedTagInput.caretPosition, "${if (nodeInfo.toString() == "#") node.parent.toString()+"/" else nodeInfo}, ", null)
+            val nodeName = "${if (nodeInfo.toString() == "#") node.parent.toString()+"/" else nodeInfo}, "
+            tagger.inputPane.insertTagAtCaret(nodeName)
         }
     }
 

@@ -20,7 +20,7 @@ class HedTagInput(private val tagger: CTagger, private val curField: String, pri
 //    private val validTagPattern = "\\w|\\+|\\^|-|\\s|\\d|/"
     private var caretPos = 0
     private val defaultMessage = "Select field level and start tagging by typing here or click on \"Show HED schema\""
-    private val job: CoroutineContext.Element
+    private var job: CoroutineContext.Element? = null
     init {
         document.addDocumentListener(this)
         addKeyListener(this)
@@ -38,9 +38,8 @@ class HedTagInput(private val tagger: CTagger, private val curField: String, pri
 //        text = defaultMessage
         setCharacterAttributes(prevAttribute, true)
 //        needParsing = true
-        tagger.hedTagInput = this
-
-        job = GlobalScope.async {
+        tagger.inputPane.newTagInput(this)
+        GlobalScope.async {
             autosave()
         }
     }
@@ -106,6 +105,9 @@ class HedTagInput(private val tagger: CTagger, private val curField: String, pri
         }
     }
 
+    /**
+     * Return the start and end location of the tag in the input pane
+     */
     private fun getTagAtPos(pos:Int): Pair<Int,Int>? {
         try {
             var startPos = Utilities.getWordStart(this,pos)
@@ -210,8 +212,10 @@ class HedTagInput(private val tagger: CTagger, private val curField: String, pri
     }
 
     private suspend fun autosave() = coroutineScope {
-        launch {
+        job = launch {
+//            print(this.toString())
             while (true) {
+                delay(100L)
                 try {
                     val fieldMap = tagger.fieldList.fieldMap
                     if (curField != null && fieldMap.containsKey(curField)) {
@@ -228,7 +232,7 @@ class HedTagInput(private val tagger: CTagger, private val curField: String, pri
     }
 
     fun cancelAutosave() {
-        println("Canceling")
-        job.cancel()
+//        println("Canceling $job")
+        job?.cancel()
     }
 }
