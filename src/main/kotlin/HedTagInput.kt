@@ -113,16 +113,16 @@ class HedTagInput(private val tagger: CTagger, private val curField: String, pri
         try {
             var startPos = Utilities.getWordStart(this,pos)
             while ((startPos > 0 && startPos < text.length && text[startPos] == '/') || (startPos > 1 && text[startPos-1] == '/')) {
-                var newPos = if (text[startPos] == '/') startPos else startPos-1
+                val newPos = if (text[startPos] == '/') startPos else startPos-1
                 startPos = Utilities.getWordStart(this, newPos-1)
             }
-            var endPos = pos
+            val endPos = Utilities.getWordEnd(this,startPos)
 
             // if new line OR comma OR empty space
             if (startPos >= text.length || (startPos == endPos && text[startPos] == ',') || ((endPos-startPos) == 1 && text[startPos] == ' '))
                 return null
             else
-                return Pair(startPos, pos)
+                return Pair(startPos, endPos)
         } catch (e: BadLocationException) {
             System.err.println(e)
             return null
