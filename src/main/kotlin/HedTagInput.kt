@@ -25,19 +25,20 @@ class HedTagInput(private val tagger: CTagger, private val curField: String, pri
         document.addDocumentListener(this)
         addKeyListener(this)
         addMouseListener(this)
-        val prevAttribute = characterAttributes
-        val attributeSet = SimpleAttributeSet()
-        StyleConstants.setItalic(attributeSet, true)
-        setCharacterAttributes(attributeSet, true)
 
         // set default string to display
-        if (tagger.getHedString(curField, curCode).isNotEmpty())
+        val resumeString = tagger.getHedString(curField, curCode)
+        if (resumeString.isNotEmpty()) {
             resume(tagger.getHedString(curField, curCode))
-        else
+        }
+        else {
+            val prevAttribute = characterAttributes
+            val attributeSet = SimpleAttributeSet()
+            StyleConstants.setItalic(attributeSet, true)
+            setCharacterAttributes(attributeSet, true)
             resume(defaultMessage)
-//        text = defaultMessage
-        setCharacterAttributes(prevAttribute, true)
-//        needParsing = true
+            setCharacterAttributes(prevAttribute, true)
+        }
         tagger.inputPane.newTagInput(this)
         GlobalScope.async {
             autosave()

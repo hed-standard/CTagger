@@ -25,41 +25,19 @@ class EventCodeList(val tagger: CTagger) : JList<String>() {
     }
     private class EventCodeListListener(val tagger:CTagger): MouseAdapter() {
         override fun mouseClicked(e: MouseEvent?) {
-            // TODO fix click event called twice issue
                 if (e != null && e.clickCount == 1) {
                     val eList = e.source as EventCodeList
                     if (!eList.valueIsAdjusting) {
                         val tagger = eList.tagger
-                        val selected = eList.selectedValue
-                        var prevSelected = eList.prevSelected
-                        println("code $selected selected")
-                        // Check for invalid tag. Only proceed if no invalid tags found
-//                    val invalidTags = tagger.hedTagInput.findInvalidTags()
-//                    if (invalidTags.isNotEmpty()) {
-//                        JOptionPane.showMessageDialog(tagger.frame,
-//                                "Please fix invalid tags (in red)",
-//                                "Invalid tags found",
-//                                JOptionPane.ERROR_MESSAGE);
-//                        eList.setSelectedValue(prevSelected, true)
-//                    }
-//                    else {
                         // creating new one
                         val curField = tagger.fieldList.selectedItem.toString()
-                        val codeMap = tagger.fieldList.fieldMap[curField]
+                        val selected = eList.selectedValue
+                        println("code $selected selected")
 
                         // create new HedTagInput pertaining to the curField-curCode pair
                         val hedTagInput = HedTagInput(tagger, curField, selected)
 
-                        // set hedTagInput to new text
-                        if (codeMap != null && codeMap.containsKey(selected))
-                            tagger.inputPane.resume(codeMap[selected])
-                        // save current tags
-//                        if (codeMap != null && prevSelected != null) {
-//                            codeMap[prevSelected] = tagger.hedTagInput.getCleanHEDString()
-//                        }
-
                         eList.prevSelected = selected
-
 
                         // hide search result pane
                         tagger.hideSearchResultPane()
