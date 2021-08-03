@@ -15,6 +15,7 @@ class EventCodeList(val tagger: CTagger) : JList<String>() {
         }
 
     init {
+        selectionMode = ListSelectionModel.SINGLE_SELECTION
         model = listModel
         addMouseListener(EventCodeListMouseListener(this))
         addKeyListener(EventCodeListKeyListener(this))
