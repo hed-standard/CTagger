@@ -143,13 +143,14 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
 
         menuItem = JMenuItem("Change schema version")
         menuItem.addActionListener {
-            val schemaList = URL("https://api.github.com/repos/hed-standard/hed-specification/contents/hedxml").readText()
+            val schemaList = URL("https://api.github.com/repos/hed-standard/hed-specification/contents/hedxml-test").readText()
             val sType = object : TypeToken<Array<SchemaListObject>>() { }.type
             val listObject: Array<SchemaListObject> = Gson().fromJson(schemaList, sType)
             val hedVersions =mutableListOf<String>()
-            listObject.forEach{ hedVersions.add(it.name.replace(".xml","")) }
+            listObject.forEach{ if (it.name.contains("xml")) hedVersions.add(it.name.replace(".xml","")) }
             val selection = JOptionPane.showInputDialog(frame, "Choose new schema version:", "", JOptionPane.PLAIN_MESSAGE, null, hedVersions.toTypedArray(), "HED8.0.0-alpha.1")
-            getHedXmlModel(selection.toString())
+            if (selection != null)
+                getHedXmlModel(selection.toString())
         }
         menu.add(menuItem)
 
@@ -277,7 +278,7 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
      * and build schema model
      * @param version   Version of the schema
      */
-    private fun getHedXmlModel(version:String = "HED8.0.0-beta.4") {
+    private fun getHedXmlModel(version:String = "HED8.0.0-beta.5") {
         val schemaLink = URL("https://raw.githubusercontent.com/hed-standard/hed-specification/master/hedxml-test/${version}.xml")
         val xmlData = schemaLink.readText()
         val hedXmlModel: HedXmlModel

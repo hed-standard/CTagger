@@ -5,7 +5,7 @@ import javax.swing.JList
 /**
  * Show search result
  */
-class SearchResultTagList(private val tagger: CTagger, private val tags: List<String>, private val hedInput: HedTagInput) : JList<String>(), FocusListener {
+class SearchResultTagList(private val tagger: CTagger, tags: List<String>, private val hedInput: HedTagInput) : JList<String>(), FocusListener {
     private val listModel = DefaultListModel<String>()
 
     init{

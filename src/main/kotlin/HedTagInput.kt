@@ -221,7 +221,7 @@ class HedTagInput(private val tagger: CTagger, private val curField: String, pri
                     val fieldMap = tagger.fieldList.fieldMap
                     if (curField != null && fieldMap.containsKey(curField)) {
                         val codeMap = fieldMap[curField]
-                        if (curCode != null && codeMap!!.containsKey(curCode))
+                        if (curCode != null && codeMap!!.containsKey(curCode) && text != defaultMessage)
                             codeMap!![curCode] = getCleanHEDString()
                     }
                 }
