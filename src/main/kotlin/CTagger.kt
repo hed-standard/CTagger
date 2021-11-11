@@ -143,12 +143,12 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
 
         menuItem = JMenuItem("Change schema version")
         menuItem.addActionListener {
-            val schemaList = URL("https://api.github.com/repos/hed-standard/hed-specification/contents/hedxml-test").readText()
+            val schemaList = URL("https://api.github.com/repos/hed-standard/hed-specification/contents/hedxml").readText()
             val sType = object : TypeToken<Array<SchemaListObject>>() { }.type
             val listObject: Array<SchemaListObject> = Gson().fromJson(schemaList, sType)
             val hedVersions =mutableListOf<String>()
             listObject.forEach{ if (it.name.contains("xml")) hedVersions.add(it.name.replace(".xml","")) }
-            val selection = JOptionPane.showInputDialog(frame, "Choose new schema version:", "", JOptionPane.PLAIN_MESSAGE, null, hedVersions.toTypedArray(), "HED8.0.0-alpha.1")
+            val selection = JOptionPane.showInputDialog(frame, "Choose new schema version:", "", JOptionPane.PLAIN_MESSAGE, null, hedVersions.toTypedArray(), "HEDLatest")
             if (selection != null)
                 getHedXmlModel(selection.toString())
         }
@@ -228,6 +228,30 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         }
         centerPane.add(showSchemaBtn, c)
 
+        c = GridBagConstraints()
+        c.gridx = 6
+        c.gridy = 0
+        c.gridwidth = 1
+        c.anchor = GridBagConstraints.LINE_END
+        c.insets = Insets(0,20,0,0)
+        val validateBtn = JButton("Validate")
+        validateBtn.addActionListener {
+            try {
+                val response = HEDWebService.validateString(inputPane.getTags())
+                if (response.results["msg_category"] == "success")
+                    JOptionPane.showMessageDialog(frame,"No issue found")
+                else {
+                    println(response)
+                    JOptionPane.showMessageDialog(frame, response.results["data"].toString().trim('[').trim(']'), response.results["msg"].toString(), JOptionPane.ERROR_MESSAGE)
+                }
+
+            }
+            catch (e: Exception) {
+                JOptionPane.showMessageDialog(frame,"Error connecting with the online validator")
+            }
+        }
+        centerPane.add(validateBtn, c)
+
         inputPane = InputLayeredPane(this)
         inputPane.preferredSize = Dimension(500,300)
 
@@ -278,8 +302,8 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
      * and build schema model
      * @param version   Version of the schema
      */
-    private fun getHedXmlModel(version:String = "HED8.0.0-beta.5") {
-        val schemaLink = URL("https://raw.githubusercontent.com/hed-standard/hed-specification/master/hedxml-test/${version}.xml")
+    private fun getHedXmlModel(version:String = "HEDLatest") {
+        val schemaLink = URL("https://raw.githubusercontent.com/hed-standard/hed-specification/master/hedxml/${version}.xml")
         val xmlData = schemaLink.readText()
         val hedXmlModel: HedXmlModel
         try {

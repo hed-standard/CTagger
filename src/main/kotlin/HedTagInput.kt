@@ -200,6 +200,10 @@ class HedTagInput(private val tagger: CTagger, private val curField: String, pri
         }
     }
 
+    fun getTags():String {
+        return text
+    }
+
     fun getCleanHEDString(): String {
         return text.trim().trim(',')
     }
