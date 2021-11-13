@@ -38,7 +38,17 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
     private lateinit var schemaView: SchemaView
     lateinit var inputPane: InputLayeredPane
     private var centerPane = JPanel()
-    private var unsavedLabel = JLabel()
+    private var validationStatus = JLabel("No annotation")
+    private val validator = HEDWebService()
+    var isValidated = true
+        set(value) {
+            if (value)
+                validationStatus.text = "Validated"
+            else
+                validationStatus.text = "Unvalidated"
+            field = value
+            hideSearchResultPane()
+        }
 
     init {
         getHedXmlModel()
@@ -67,7 +77,7 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         createMenuBar()
         addFieldSelectionPane(mainPane)
         addCenterPane(mainPane)
-        addDoneBtn(mainPane)
+        addBtnPane(mainPane)
 
 //        hedTagInput.setNoParsing()
         if (isTSV)
@@ -166,12 +176,14 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
 
     private fun addFieldSelectionPane(mainPane: Container) {
         val fieldSelectionPane = JPanel(FlowLayout())
+//        fieldSelectionPane.add(validationStatus)
         val fieldSelectionPaneLabel = JLabel("Tagging field: ")
-        fieldSelectionPane.add(fieldSelectionPaneLabel)
         fieldSelectionPaneLabel.foreground = Style.BLUE_DARK
         fieldSelectionPaneLabel.font = Font("Sans Serif", Font.BOLD, 14)
+        fieldSelectionPane.add(fieldSelectionPaneLabel)
         fieldList.initializeListener()
         fieldSelectionPane.add(fieldList)
+
         mainPane.add(fieldSelectionPane, BorderLayout.NORTH)
     }
 
@@ -234,10 +246,10 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         c.gridwidth = 1
         c.anchor = GridBagConstraints.LINE_END
         c.insets = Insets(0,20,0,0)
-        val validateBtn = JButton("Validate")
+        val validateBtn = JButton("Validate string")
         validateBtn.addActionListener {
             try {
-                val response = HEDWebService.validateString(inputPane.getTags())
+                val response = validator.validateString(inputPane.getTags())
                 if (response.results["msg_category"] == "success")
                     JOptionPane.showMessageDialog(frame,"No issue found")
                 else {
@@ -247,7 +259,8 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
 
             }
             catch (e: Exception) {
-                JOptionPane.showMessageDialog(frame,"Error connecting with the online validator")
+                JOptionPane.showMessageDialog(frame,"Error connecting with the online validator.\nPlease try again later or go to https://hedtools.ucsd.edu/hed/string")
+                isValidated = true
             }
         }
         centerPane.add(validateBtn, c)
@@ -267,7 +280,7 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         mainPane.add(centerPane, BorderLayout.CENTER)
     }
 
-    private fun addDoneBtn(mainPane: Container) {
+    private fun addBtnPane(mainPane: Container) {
         val btnPane = JPanel()
         val cancelBtn = JButton("Cancel")
         cancelBtn.addActionListener {
@@ -280,19 +293,44 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
                 exitProcess(0)
         }
         btnPane.add(cancelBtn)
-        val doneBtn = JButton("Done")
-        doneBtn.addActionListener {
-            showJsonWindow()
-            if (!isStandalone) {
-                loader!!.notified = true
-                loader!!.jsonResult = prettyPrintJson(exportToJson(fieldList.fieldMap))
-                frame.dispose()
-            }
-            else
-                exitProcess(0)
-//            frame.dispatchEvent(WindowEvent(frame, WindowEvent.WINDOW_CLOSING))
-        }
 
+        val validateAllBtn = JButton("Validate all")
+        validateAllBtn.addActionListener {
+            try {
+                val response = if (fieldList.isQuickTagging()) validator.validateString(inputPane.getTags()) else validator.validateSidecar(getFieldMapJson())
+                if (response.results["msg_category"] == "success") {
+                    isValidated = true
+                    JOptionPane.showMessageDialog(frame, "No issue found")
+                }
+                else {
+                    isValidated = false
+                    validationStatus.text = "Validation failed"
+                    JOptionPane.showMessageDialog(frame, response.results["data"].toString().trim('[').trim(']'), response.results["msg"].toString(), JOptionPane.ERROR_MESSAGE)
+                }
+            }
+            catch (e: Exception) {
+                JOptionPane.showMessageDialog(frame,"Error connecting to the validator server.\nPlease save your annotation and try again later or go to https://hedtools.ucsd.edu/hed/sidecar")
+                isValidated = true
+            }
+        }
+        btnPane.add(validateAllBtn)
+
+        val doneBtn = JButton("Finish")
+        doneBtn.addActionListener {
+            if (!isValidated) {
+                JOptionPane.showMessageDialog(frame,"Unvalidated annotations. Please Validate all annotations before finishing.")
+            }
+            else {
+                showJsonWindow()
+                if (!isStandalone) {
+                    loader!!.notified = true
+                    loader!!.jsonResult = getFieldMapJson()
+                    frame.dispose()
+                } else
+                    exitProcess(0)
+//            frame.dispatchEvent(WindowEvent(frame, WindowEvent.WINDOW_CLOSING))
+            }
+        }
         btnPane.add(doneBtn)
         mainPane.add(btnPane, BorderLayout.SOUTH)
     }
@@ -382,8 +420,12 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         return gson.toJson(fieldMap)
     }
 
+    fun getFieldMapJson(): String {
+        return prettyPrintJson(exportToJson(fieldList.fieldMap))
+    }
+
     private fun showJsonWindow() {
-        val json = prettyPrintJson(exportToJson(fieldList.fieldMap))
+        val json = getFieldMapJson()
         val textarea = JTextArea(25,50)
         textarea.text = json
         textarea.isEditable = false

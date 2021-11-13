@@ -54,6 +54,7 @@ class HedTagInput(private val tagger: CTagger, private val curField: String, pri
      */
     override fun insertUpdate(e: DocumentEvent) {
         if (needParsing) {
+            tagger.isValidated = false
             caretPos = caretPosition
             val result = getTagAtPos(caretPosition)
 
@@ -80,6 +81,9 @@ class HedTagInput(private val tagger: CTagger, private val curField: String, pri
     }
 
     override fun removeUpdate(e: DocumentEvent) {
+        if (needParsing) {
+            tagger.isValidated = false
+        }
     }
 
     // black highlight compatible input
@@ -173,7 +177,9 @@ class HedTagInput(private val tagger: CTagger, private val curField: String, pri
 
     override fun mousePressed(e: MouseEvent) {
         if (text == defaultMessage) {
+            needParsing = false
             text = ""
+            needParsing = true
         }
     }
 

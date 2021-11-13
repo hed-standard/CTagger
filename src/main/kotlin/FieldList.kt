@@ -11,7 +11,7 @@ class FieldList(val tagger: CTagger): JComboBox<String>() {
         addItemListener {
             if (it.stateChange == ItemEvent.DESELECTED) {
                 val curField = it.item as String
-                println(curField)
+                println("Field $curField selected")
 //                // save current work
 //                if (curField != null) {
 //                    val map = fieldMap[curField!!]
@@ -106,6 +106,11 @@ class FieldList(val tagger: CTagger): JComboBox<String>() {
     fun isEmpty(): Boolean {
         return fieldMap.isEmpty()
     }
+
+    fun isQuickTagging(): Boolean {
+        return fieldMap.keys.size == 1 && fieldMap.containsKey("none")
+    }
+
     fun clear() {
         fieldMap.clear()
         fieldAndUniqueCodeMap.clear()
