@@ -1,7 +1,7 @@
 Welcome to CTAGGER!
 ===================
 
-.. sidebar:: **Download for offline viewing**
+.. sidebar:: **Downloads**
 
    `PDF Guide to CTagger
    <https://ctagger.readthedocs.io/_/downloads/en/latest/pdf/>`_.
