@@ -1,7 +1,10 @@
 Welcome to CTAGGER!
-=============================================
+===================
 
-A PDF version of this document can be found `here <https://ctagger.readthedocs.io/_/downloads/en/latest/pdf/>`_
+.. sidebar:: **Download for offline viewing**
+
+   Download the `user guide and examples
+   <https://https://ctagger.readthedocs.io/_/downloads/en/latest/pdf/>`_.
 
 Note:  this is a work in progress.
 
