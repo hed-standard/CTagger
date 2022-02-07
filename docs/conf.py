@@ -62,7 +62,7 @@ html_theme_options = {
     'analytics_anonymize_ip': False,
     'logo_only': False,
     'display_version': True,
-    'prev_next_buttons_location': 'bottom',
+    'prev_next_buttons_location': 'top',
     'style_external_links': False,
     'vcs_pageview_mode': '',
     'style_nav_header_background': 'LightSlateGray',
