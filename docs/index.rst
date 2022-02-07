@@ -1,5 +1,5 @@
-Welcome to CTAGGER!
-===================
+CTagger: HED tagging made easy
+==============================
 
 .. sidebar:: **Downloads**
 
