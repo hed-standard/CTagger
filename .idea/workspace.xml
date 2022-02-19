@@ -6,7 +6,16 @@
   <component name="ChangeListManager">
     <list default="true" id="6456135d-0706-4242-90fd-c26ebface9bf" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_templates/layout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/docs/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/Overview.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/source/Overview.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/source/_templates/layout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/docs/source/conf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/index.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/source/index.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/introduction.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/source/introduction.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/make.bat" beforeDir="false" afterPath="$PROJECT_DIR$/docs/make.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/docs/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/user_guide.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/source/user_guide.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readthedocs.yml" beforeDir="false" afterPath="$PROJECT_DIR$/readthedocs.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,6 +47,9 @@
       <recent name="E:\CTAGGER\CTagger\docs\_templates" />
       <recent name="E:\CTAGGER\CTagger\docs" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\CTAGGER\CTagger\docs\source" />
+    </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -48,7 +60,8 @@
       <option name="presentableId" value="Default" />
       <updated>1643936643089</updated>
       <workItem from="1643936646368" duration="6620000" />
-      <workItem from="1644237395057" duration="2726000" />
+      <workItem from="1644237395057" duration="3165000" />
+      <workItem from="1645277122080" duration="1908000" />
     </task>
     <servers />
   </component>
