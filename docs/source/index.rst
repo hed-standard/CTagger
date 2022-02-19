@@ -3,8 +3,9 @@ CTagger: HED tagging made easy
 
 .. sidebar:: **Downloads**
 
-   `PDF Guide to CTagger
-   <https://ctagger.readthedocs.io/_/downloads/en/latest/pdf/>`_.
+   * `PDF docs <https://ctagger.readthedocs.io/_/downloads/en/latest/pdf/>`_.
+
+   * `Source code <https://github.com/hed-standard/CTagger/>`_
 
 Note:  this is a work in progress.
 
