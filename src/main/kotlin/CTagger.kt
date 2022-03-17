@@ -19,14 +19,22 @@ import javax.swing.border.EmptyBorder
 import javax.xml.bind.JAXBContext
 import kotlin.system.exitProcess
 
+
 fun main() {
     SwingUtilities.invokeLater { CTagger(isJson = false, isTSV = false, filename = "", jsonString="", isScratch=true) }
 }
 
-class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: Boolean, var filename:String, var jsonString:String, var isScratch:Boolean) {
+class CTagger(
+    var isStandalone: Boolean = true,
+    val isJson: Boolean,
+    var isTSV: Boolean,
+    var filename: String,
+    var jsonString: String,
+    var isScratch: Boolean
+) {
     var isVerbose = false
     var loader: TaggerLoader? = null
-    private val frame = JFrame("CTagger")
+    private val frame = JFrame("CTaggerTest")
     var hedVersion = ""
     lateinit var unitClasses: Set<UnitClassXmlModel>
     lateinit var unitModifiers: ArrayList<UnitModifierXmlModel>
@@ -249,12 +257,19 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         val validateBtn = JButton("Validate string")
         validateBtn.addActionListener {
             try {
-                val response = validator.validateString(inputPane.getTags())
+                val response = validator.validateString(inputPane.getCleanedHEDString())
                 if (response.results["msg_category"] == "success")
                     JOptionPane.showMessageDialog(frame,"No issue found")
                 else {
                     println(response)
-                    JOptionPane.showMessageDialog(frame, response.results["data"].toString().trim('[').trim(']'), response.results["msg"].toString(), JOptionPane.ERROR_MESSAGE)
+                    val jta = JTextArea(response.results["data"].toString().trim('[').trim(']'))
+                    val jsp: JScrollPane = object : JScrollPane(jta) {
+                        override fun getPreferredSize(): Dimension {
+                            return Dimension(500, 320)
+                        }
+                    }
+                    jsp.background = Style.BLUE_MEDIUM
+                    JOptionPane.showMessageDialog(frame, jsp, response.results["msg"].toString(), JOptionPane.ERROR_MESSAGE)
                 }
 
             }
@@ -297,7 +312,7 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
         val validateAllBtn = JButton("Validate all")
         validateAllBtn.addActionListener {
             try {
-                val response = if (fieldList.isQuickTagging()) validator.validateString(inputPane.getTags()) else validator.validateSidecar(getFieldMapJson())
+                val response = if (fieldList.isQuickTagging()) validator.validateString(inputPane.getCleanedHEDString()) else validator.validateSidecar(getFieldMapJson())
                 if (response.results["msg_category"] == "success") {
                     isValidated = true
                     JOptionPane.showMessageDialog(frame, "No issue found")
@@ -305,7 +320,14 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
                 else {
                     isValidated = false
                     validationStatus.text = "Validation failed"
-                    JOptionPane.showMessageDialog(frame, response.results["data"].toString().trim('[').trim(']'), response.results["msg"].toString(), JOptionPane.ERROR_MESSAGE)
+                    val jta = JTextArea(response.results["data"].toString().trim('[').trim(']'))
+                    val jsp: JScrollPane = object : JScrollPane(jta) {
+                        override fun getPreferredSize(): Dimension {
+                            return Dimension(500, 320)
+                        }
+                    }
+                    jsp.background = Style.BLUE_MEDIUM
+                    JOptionPane.showMessageDialog(frame, jsp, response.results["msg"].toString(), JOptionPane.ERROR_MESSAGE)
                 }
             }
             catch (e: Exception) {
@@ -340,7 +362,7 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
      * and build schema model
      * @param version   Version of the schema
      */
-    private fun getHedXmlModel(version:String = "HEDLatest") {
+    private fun getHedXmlModel(version: String = "HEDLatest") {
         val schemaLink = URL("https://raw.githubusercontent.com/hed-standard/hed-specification/master/hedxml/${version}.xml")
         val xmlData = schemaLink.readText()
         val hedXmlModel: HedXmlModel
@@ -349,7 +371,7 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
             hedXmlModel = context.createUnmarshaller().unmarshal(StringReader(xmlData)) as HedXmlModel
             hedVersion = hedXmlModel.version
         }
-        catch(e: Exception) {
+        catch (e: Exception) {
             throw RuntimeException("Unable to read XML data: " + e.message)
         }
         unitClasses = hedXmlModel.unitClasses.unitClasses
@@ -386,7 +408,7 @@ class CTagger(var isStandalone: Boolean = true, val isJson: Boolean, var isTSV: 
      * Export field map (fMap) to json accordingly to HED-BIDS specification
      * https://bids-specification.readthedocs.io/en/stable/99-appendices/03-hed.html#appendix-iii-hierarchical-event-descriptors
      */
-    fun exportToJson(fMap: HashMap<String, HashMap<String,String>>): HashMap<String, Any> {
+    fun exportToJson(fMap: HashMap<String, HashMap<String, String>>): HashMap<String, Any> {
         val jsonFieldMap = HashMap<String, Any>()
         fMap.forEach {
             // value type, ignoring empty fields

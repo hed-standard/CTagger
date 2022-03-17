@@ -105,7 +105,7 @@ docs/_build/
 .vimrc
 
 # Pycharm
-.idea/
+.idea/ # and Intellij
 /venv/
 config.py
 

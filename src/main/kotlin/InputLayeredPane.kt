@@ -97,9 +97,9 @@ class InputLayeredPane(private val tagger:CTagger) : JLayeredPane() {
             hedInputDoc.insertString(hedTagInput!!.caretPosition, tag, null)
     }
 
-    fun getTags(): String{
+    fun getCleanedHEDString(): String{
         if (hedTagInput != null)
-            return hedTagInput!!.getTags()
+            return hedTagInput!!.getCleanHEDString()
         else
             return ""
     }
