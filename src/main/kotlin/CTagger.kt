@@ -34,7 +34,7 @@ class CTagger(
 ) {
     var isVerbose = false
     var loader: TaggerLoader? = null
-    private val frame = JFrame("CTaggerTest")
+    private val frame = JFrame("CTagger v3.3.1")
     var hedVersion = ""
     lateinit var unitClasses: Set<UnitClassXmlModel>
     lateinit var unitModifiers: ArrayList<UnitModifierXmlModel>
