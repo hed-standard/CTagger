@@ -58,8 +58,11 @@ class FieldList(val tagger: CTagger): JComboBox<String>() {
         }
         // initialize fieldMap
         fieldMap[field] = HashMap()
+        // initialize codeMap
+        fieldAndUniqueCodeMap[field]!!.forEach {
+            fieldMap[field]!![it] = ""
+        }
         addItem(field)
-
     }
     fun addFieldFromDict(field:String, fieldDict: CTagger.BIDSFieldDict) {
         // add field name to dropdown list
