@@ -34,7 +34,7 @@ class CTagger(
 ) {
     var isVerbose = false
     var loader: TaggerLoader? = null
-    private val frame = JFrame("CTagger v3.3.1")
+    private val frame = JFrame("CTagger v3.4.0")
     var hedVersion = ""
     lateinit var unitClasses: Set<UnitClassXmlModel>
     lateinit var unitModifiers: ArrayList<UnitModifierXmlModel>
@@ -253,7 +253,23 @@ class CTagger(
         c.gridy = 0
         c.gridwidth = 1
         c.anchor = GridBagConstraints.LINE_END
-        c.insets = Insets(0,20,0,0)
+//        c.insets = Insets(0,5,0,0)
+        val createDefBtn = JButton("Create definition")
+        createDefBtn.addActionListener {
+            val input = JOptionPane.showInputDialog("Definition name (e.g. 'Show-face')")
+            eventCodeList.addDefinition(input)
+            SwingUtilities.invokeLater{
+                centerPane.repaint()
+            }
+        }
+        centerPane.add(createDefBtn, c)
+
+        c = GridBagConstraints()
+        c.gridx = 7
+        c.gridy = 0
+        c.gridwidth = 1
+        c.anchor = GridBagConstraints.LINE_END
+//        c.insets = Insets(0,5,0,0)
         val validateBtn = JButton("Validate string")
         validateBtn.addActionListener {
             try {
@@ -261,7 +277,6 @@ class CTagger(
                 if (response.results["msg_category"] == "success")
                     JOptionPane.showMessageDialog(frame,"No issue found")
                 else {
-                    println(response)
                     val jta = JTextArea(response.results["data"].toString().trim('[').trim(']'))
                     val jsp: JScrollPane = object : JScrollPane(jta) {
                         override fun getPreferredSize(): Dimension {
@@ -287,7 +302,7 @@ class CTagger(
         c.fill = GridBagConstraints.HORIZONTAL
         c.gridx = 2
         c.gridy = 1
-        c.gridwidth = 5
+        c.gridwidth = 6
         c.weightx = 1.0
         c.insets = Insets(0,0,0,5)
         centerPane.add(inputPane, c)
@@ -450,8 +465,10 @@ class CTagger(
         val json = getFieldMapJson()
         val textarea = JTextArea(25,50)
         textarea.text = json
+        textarea.lineWrap = true
+        textarea.wrapStyleWord = true
         textarea.isEditable = false
-        val scroller = JScrollPane(textarea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
+        val scroller = JScrollPane(textarea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER)
         val options1 = arrayOf<Any>("Save to file", "Ok")
         val result = JOptionPane.showOptionDialog(frame, scroller, "BIDS events.json HED string", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, options1, 1)
 
@@ -748,7 +765,13 @@ class CTagger(
     fun clearSearchResult() {
         inputPane.clearSearchResult()
     }
-    /** **/
+
+    /**
+     * Show error message dialog
+     */
+    fun showErrorMessage(message: String) {
+        JOptionPane.showMessageDialog(frame, message, "Error", JOptionPane.ERROR_MESSAGE)
+    }
 
     /**
      * For deserialization of json

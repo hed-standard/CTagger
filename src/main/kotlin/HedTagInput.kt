@@ -60,14 +60,18 @@ class HedTagInput(private val tagger: CTagger, private val curField: String, pri
 
             if (result != null) {
                 val enteredText = text.substring(result.first, result.second)
-                findMatchingTags(enteredText)
-                if (!tagger.isSearchResultEmpty()) {
-                    try {
-                        val pos = modelToView(caretPosition)
-                        tagger.showSearchResultPane(10, pos.y + 25) // put the search result at the left most but under current caret
-                    } catch (e: Exception) {
-                        print("Exception " + e.message)
-                        e.printStackTrace()
+                if (!enteredText.trim().isEmpty()) {
+                    findMatchingTags(enteredText)
+                    if (!tagger.isSearchResultEmpty()) {
+                        try {
+                            val pos = modelToView(caretPosition)
+                            tagger.showSearchResultPane(10, pos.y + 25) // put the search result at the left most but under current caret
+                        } catch (e: Exception) {
+                            print("Exception " + e.message)
+                            e.printStackTrace()
+                        }
+                    } else {
+                        tagger.hideSearchResultPane()
                     }
                 } else {
                     tagger.hideSearchResultPane()

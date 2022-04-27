@@ -66,4 +66,52 @@ class EventCodeList(val tagger: CTagger) : JList<String>() {
             tagger.hideSearchResultPane()
         }
     }
+
+    /**
+     * Add new definition
+     */
+    fun addDefinition(definition: String) {
+        if (!isValidDefName(definition)) {
+            tagger.showErrorMessage("Invalid definition name. Definition name should not contain spaces or special characters.")
+            return
+        }
+        // add definition to model and GUI
+        if (!tagger.fieldList.hasField("hed_definitions")) {
+            tagger.fieldList.addField("hed_definitions")
+        }
+
+        // Transfer definition name to definition code automatically
+        val defCode = getValidDefinitionCode(definition)
+        if (tagger.fieldList.hasCode("hed_definitions", defCode)) {
+            tagger.showErrorMessage("Definition $definition already exists")
+        } else {
+            tagger.fieldList.addDefinition(definition)
+        }
+
+        tagger.fieldList.selectedItem = "hed_definitions"
+        codeSet = tagger.fieldList.fieldAndUniqueCodeMap["hed_definitions"]!!
+        // refresh GUI
+        SwingUtilities.invokeLater{
+            tagger.fieldList.repaint()
+            repaint()
+        }
+    }
+
+    /**
+     * Check if definition name is valid
+     */
+    private fun isValidDefName(definition: String): Boolean {
+        if (definition.contains(" ") || definition.contains("\\") || definition.contains("/")) {
+            return false
+        }
+        return true
+    }
+
+    /**
+     * Get valid definition code
+     */
+    fun getValidDefinitionCode(definition: String): String {
+        val defCode = definition.replace("-", "_") + "_def"
+        return defCode
+    }
 }

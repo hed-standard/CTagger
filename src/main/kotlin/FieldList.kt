@@ -4,23 +4,14 @@ import javax.swing.JComboBox
 
 class FieldList(val tagger: CTagger): JComboBox<String>() {
     val fieldMap = HashMap<String, HashMap<String,String>>()
-    var fieldAndUniqueCodeMap = HashMap<String, List<String>>()
+    var fieldAndUniqueCodeMap = HashMap<String, MutableList<String>>()
     val isValueField = HashMap<String, Boolean>()
-    val oldFieldAndUniqueCodeMap = HashMap<String, List<String>>()
+    val oldFieldAndUniqueCodeMap = HashMap<String, MutableList<String>>()
     fun initializeListener() {
         addItemListener {
             if (it.stateChange == ItemEvent.DESELECTED) {
                 val curField = it.item as String
                 println("Field $curField selected")
-//                // save current work
-//                if (curField != null) {
-//                    val map = fieldMap[curField!!]
-//                    val key = tagger.eventCodeList.selectedValue
-////                    eventCodeList.prevSelected = null
-//                    if (map != null && key != null)
-//                        map[key] = tagger.hedTagInput.getCleanHEDString()
-//                    tagger.hedTagInput.text = null
-//                }
                 // set new field and new code list
                 if (selectedItem != null && fieldAndUniqueCodeMap.containsKey(selectedItem.toString()!!)) {
                     // get unique event codes
@@ -31,12 +22,12 @@ class FieldList(val tagger: CTagger): JComboBox<String>() {
     }
     fun addField(field:String) {
         // add unique codes to each field, ignoring BIDS default numerical fields
-        if (!listOf("duration", "onset", "sample", "stim_file", "HED", "response_time").contains(field)) {
+        if (listOf("duration", "onset", "sample", "stim_file", "HED", "response_time").contains(field)) {
+            fieldAndUniqueCodeMap[field] = mutableListOf("HED")
+            isValueField[field] = true
+        } else {
             fieldAndUniqueCodeMap[field] = mutableListOf()
             isValueField[field] = false
-        } else {
-            fieldAndUniqueCodeMap[field] = listOf("HED")
-            isValueField[field] = true
         }
         // initialize fieldMap
         fieldMap[field] = HashMap()
@@ -50,10 +41,10 @@ class FieldList(val tagger: CTagger): JComboBox<String>() {
 
         // add unique codes to each field, ignoring BIDS default numerical fields
         if (isCategorical) {
-            fieldAndUniqueCodeMap[field] = uniqueValues.toList()
+            fieldAndUniqueCodeMap[field] = uniqueValues.toMutableList()
             isValueField[field] = false
         } else {
-            fieldAndUniqueCodeMap[field] = listOf("HED")
+            fieldAndUniqueCodeMap[field] = mutableListOf("HED")
             isValueField[field] = true
         }
         // initialize fieldMap
@@ -70,15 +61,15 @@ class FieldList(val tagger: CTagger): JComboBox<String>() {
         // add field to data structure
         // whether a field is categorical is determined by whether Levels has values or not
         if (fieldDict.Levels.isNotEmpty()) {
-            fieldAndUniqueCodeMap[field] = fieldDict.Levels.keys.toList()
+            fieldAndUniqueCodeMap[field] = fieldDict.Levels.keys.toMutableList()
             isValueField[field] = false
         }
         else if (fieldDict.HED is LinkedTreeMap<*,*>) {
-            fieldAndUniqueCodeMap[field] = (fieldDict.HED as LinkedTreeMap<String, String>).keys.toList()
+            fieldAndUniqueCodeMap[field] = (fieldDict.HED as LinkedTreeMap<String, String>).keys.toMutableList()
             isValueField[field] = false
         }
         else {
-            fieldAndUniqueCodeMap[field] = listOf("HED")
+            fieldAndUniqueCodeMap[field] = mutableListOf("HED")
             isValueField[field] = true
         }
         // initialize fieldMap
@@ -104,6 +95,44 @@ class FieldList(val tagger: CTagger): JComboBox<String>() {
                 return fieldMap[field]!![code]!!
         }
         return ""
+    }
+
+    /**
+     * Check if fieldList contains field
+     */
+    fun hasField(field: String): Boolean {
+        return fieldMap.containsKey(field)
+    }
+
+    /**
+     * Add code to field
+     */
+    fun addCode(field: String, code: String) {
+        if (fieldMap.containsKey(field)) {
+            fieldMap[field]!![code] = ""
+            if (fieldAndUniqueCodeMap.containsKey(field) && !fieldAndUniqueCodeMap[field]!!.contains(code))
+                fieldAndUniqueCodeMap[field]!!.add(code)
+        }
+    }
+
+    /**
+     * Add code to field
+     */
+    fun addDefinition(definitionName: String) {
+        val field = "hed_definitions"
+        val defCodeName = definitionName.replace("-", "_") + "_def"
+        if (fieldMap.containsKey(field)) {
+            fieldMap[field]!![defCodeName] = "(Definition/$definitionName, ())"
+            if (fieldAndUniqueCodeMap.containsKey(field) && !fieldAndUniqueCodeMap[field]!!.contains(defCodeName))
+                fieldAndUniqueCodeMap[field]!!.add(defCodeName)
+        }
+    }
+
+    /**
+     * Check if field contains code
+     */
+    fun hasCode(field: String, code: String): Boolean {
+        return fieldMap.containsKey(field) && fieldMap[field]!!.containsKey(code)
     }
 
     fun isEmpty(): Boolean {
