@@ -49,7 +49,7 @@ class HedTagInput(private val tagger: CTagger, private val curField: String, pri
      * Action handler when a character is inserted
      * 1. Get word (HED tag) to which the new character is part of
      * 2. Search and process result
-     *      2.1. If tag exist, show search result in the window below the word, black highlight (overwritting any active red highlight).
+     *      2.1. If tag exist, show search result in the window below the word, black highlight (overwriting any active red highlight).
      *      2.2. If tag doesn't exist, hide result window (if on) and red highlight the word
      */
     override fun insertUpdate(e: DocumentEvent) {
