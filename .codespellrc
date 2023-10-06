@@ -1,0 +1,4 @@
+[codespell]
+skip = .git,*.pdf,*.svg
+# some ad-hoc variables etc
+ignore-words-list = splitted,optin
