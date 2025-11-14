@@ -31,8 +31,8 @@ class TagModel(val fullPath: String, var parent: TagModel? = null, xmlModel: Tag
     /**
      * Tags are compared by their paths.
      */
-    override fun compareTo(tagModel: TagModel): Int {
-        return if (fullPath == tagModel.fullPath) 0 else -1
+    override fun compareTo(other: TagModel): Int {
+        return if (fullPath == other.fullPath) 0 else -1
     }
 
     override fun toString(): String {

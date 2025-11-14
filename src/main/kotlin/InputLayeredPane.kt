@@ -29,7 +29,7 @@ class InputLayeredPane(private val tagger:CTagger) : JLayeredPane() {
             inputScrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER // Force wrapping. Deduced from: http://java-sl.com/wrap.html
             inputScrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
             inputScrollPane.bounds = Rectangle(10,0,hedTagInput!!.preferredSize.width, hedTagInput!!.preferredSize.height)
-            add(inputScrollPane, Integer(0), 1)
+            add(inputScrollPane, 0, 1)
 
             searchResultTagList = SearchResultTagList(tagger, tagger.tags, hedTagInput!!)
             searchResultPanel = JScrollPane(searchResultTagList)
@@ -38,7 +38,7 @@ class InputLayeredPane(private val tagger:CTagger) : JLayeredPane() {
             searchResultPanel.setBounds(10, 10, 480,150)
 //        searchResultPanel.location = Point(30,150)
             searchResultPanel.isVisible = false
-            add(searchResultPanel, Integer(0), 0)
+            add(searchResultPanel, 0, 0)
         }
     }
 
@@ -56,7 +56,7 @@ class InputLayeredPane(private val tagger:CTagger) : JLayeredPane() {
             searchResultPanel.isVisible = true
             searchResultPanel.revalidate()
             searchResultPanel.repaint()
-            add(searchResultPanel, Integer(0),0)
+            add(searchResultPanel, 0,0)
             repaint()
         }
     }

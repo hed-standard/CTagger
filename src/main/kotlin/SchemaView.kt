@@ -43,9 +43,9 @@ class SchemaView(private val tagger: CTagger, hedRoot: TagModel) : TreeSelection
                 val selRow = tree.getRowForLocation(e.getX(), e.getY())
                 if (selRow != -1) {
                     val selPath: TreePath = tree.getPathForLocation(e.getX(), e.getY())
-                    if (e.getClickCount() === 1) {
+                    if (e.getClickCount() == 1) {
                         showTagInfo(selRow, selPath)
-                    } else if (e.getClickCount() === 2) {
+                    } else if (e.getClickCount() == 2) {
                         addTagToEditor(selRow, selPath)
                     }
                 }
@@ -76,7 +76,7 @@ class SchemaView(private val tagger: CTagger, hedRoot: TagModel) : TreeSelection
         frame.pack()
     }
 
-    fun showTagInfo(selRow:Int, selPath: TreePath) {
+    fun showTagInfo(_selRow:Int, _selPath: TreePath) {
         val node = tree.lastSelectedPathComponent as DefaultMutableTreeNode
         val nodeInfo = node.userObject
         val tagModel = tagger.schema[nodeInfo.toString()]
@@ -95,7 +95,7 @@ class SchemaView(private val tagger: CTagger, hedRoot: TagModel) : TreeSelection
             infoPane.text = info
         }
     }
-    fun addTagToEditor(selRow:Int, selPath: TreePath) {
+    fun addTagToEditor(_selRow:Int, _selPath: TreePath) {
         val node = tree.lastSelectedPathComponent as DefaultMutableTreeNode
         val nodeInfo = node.userObject
         if (nodeInfo.toString() != "HED") {
@@ -117,7 +117,7 @@ class SchemaView(private val tagger: CTagger, hedRoot: TagModel) : TreeSelection
     // Add tags to tree recursively
     private fun populateTagSets(parent: DefaultMutableTreeNode, tagSets: List<TagModel>) {
         for (tagModel: TagModel in tagSets) {
-            nodeDescription[tagModel.name!!] = tagModel.description!!
+            nodeDescription[tagModel.name!!] = tagModel.description
             val curNode = DefaultMutableTreeNode(tagModel.name)
             parent.add(curNode)
             populateTagSets(curNode, tagModel.children)

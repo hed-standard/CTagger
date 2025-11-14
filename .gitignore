@@ -118,3 +118,9 @@ Thumbs.db
 
 # Folder config file
 Desktop.ini
+
+#################
+## Status Reports
+#################
+status/
+

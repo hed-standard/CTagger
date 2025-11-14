@@ -15,7 +15,7 @@ import java.net.URLEncoder
 
 fun getHEDSessionInfo(hostURL:String):Pair<String,String> {
     val csrf_url = "$hostURL/services"
-    val url = URL(csrf_url)
+    val url = java.net.URI(csrf_url).toURL()
     val con: HttpURLConnection = url.openConnection() as HttpURLConnection
     val cookiesHeader = con.getHeaderField("Set-Cookie")
     val stream = BufferedReader(
@@ -45,7 +45,7 @@ fun toJson(map: Any): String {
 fun sendRequestToHEDServer(host:String,data:String): HEDResponse? {
     val services_url = "$host/services_submit?service=get_services"
     val cookies_csrf = getHEDSessionInfo(host)
-    val url = URL(services_url)
+    val url = java.net.URI(services_url).toURL()
     val con: HttpURLConnection = url.openConnection() as HttpURLConnection
     try {
         // set headers
@@ -87,7 +87,7 @@ fun sendRequestToHEDServer(host:String,data:String): HEDResponse? {
         return null
     }
 }
-fun getStringServiceData(service:String="string_validate", schema_version:String="8.0.0-alpha.2", string_list: List<String>, check_for_warnings:Boolean=true): String{
+fun getStringServiceData(service:String="string_validate", schema_version:String="8.4.0", string_list: List<String>, check_for_warnings:Boolean=true): String{
     val data = HashMap<String,String>()
     data["service"] = service
     data["schema_version"] = schema_version
@@ -97,7 +97,7 @@ fun getStringServiceData(service:String="string_validate", schema_version:String
     return toJson(data)
 }
 fun main() {
-    val host = "https://hedtools.ucsd.edu/hed"
+    val host = "https://hedtools.org/hed"
     val result = sendRequestToHEDServer(host, getStringServiceData(string_list = listOf("Red,Blue")))
     print(result)
 }

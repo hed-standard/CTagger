@@ -58,7 +58,7 @@ class EventCodeList(val tagger: CTagger) : JList<String>() {
             println("Field level $selected selected")
 
             // create new HedTagInput pertaining to the curField-curCode pair
-            val hedTagInput = HedTagInput(tagger, curField, selected)
+            HedTagInput(tagger, curField, selected)
 
             eList.prevSelected = selected
 
