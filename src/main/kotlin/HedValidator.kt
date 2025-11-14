@@ -78,7 +78,7 @@ class HedValidator(private val schema: HashMap<String, TagModel>, private val ta
                         }
                         if (unitClass != null) {
                             val allowedUnits = mutableListOf<String>()
-                            unitClass!!.units.map {
+                            unitClass.units.map {
                                 if (it.isSIUnit) {
                                     if (it.isUnitSymbol)
                                         tagger.unitModifiers.filter {modifier -> modifier.isSIUnitSymbolModifier}.map {mod -> allowedUnits.add("${mod.name}${it.name}")}

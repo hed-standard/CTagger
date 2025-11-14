@@ -161,7 +161,7 @@ class CTagger(
 
         menuItem = JMenuItem("Change schema version")
         menuItem.addActionListener {
-            val schemaList = URL("https://api.github.com/repos/hed-standard/hed-specification/contents/hedxml").readText()
+            val schemaList = java.net.URI("https://api.github.com/repos/hed-standard/hed-specification/contents/hedxml").toURL().readText()
             val sType = object : TypeToken<Array<SchemaListObject>>() { }.type
             val listObject: Array<SchemaListObject> = Gson().fromJson(schemaList, sType)
             val hedVersions =mutableListOf<String>()
@@ -289,7 +289,11 @@ class CTagger(
 
             }
             catch (e: Exception) {
-                JOptionPane.showMessageDialog(frame,"Error connecting with the online validator.\nPlease try again later or go to https://hedtools.ucsd.edu/hed/string")
+                val errorMsg = e.message ?: "Unknown error"
+                JOptionPane.showMessageDialog(frame,
+                    "Validation Error:\n$errorMsg\n\nPlease try again later or go to https://hedtools.org/hed/strings",
+                    "Validation Error",
+                    JOptionPane.ERROR_MESSAGE)
                 isValidated = true
             }
         }
@@ -346,7 +350,11 @@ class CTagger(
                 }
             }
             catch (e: Exception) {
-                JOptionPane.showMessageDialog(frame,"Error connecting to the validator server.\nPlease save your annotation and try again later or go to https://hedtools.ucsd.edu/hed/sidecar")
+                val errorMsg = e.message ?: "Unknown error"
+                JOptionPane.showMessageDialog(frame,
+                    "Validation Error:\n$errorMsg\n\nPlease save your annotation and try again later or go to https://hedtools.org/hed/sidecars",
+                    "Validation Error",
+                    JOptionPane.ERROR_MESSAGE)
                 isValidated = true
             }
         }
@@ -378,7 +386,7 @@ class CTagger(
      * @param version   Version of the schema
      */
     private fun getHedXmlModel(version: String = "HEDLatest") {
-        val schemaLink = URL("https://raw.githubusercontent.com/hed-standard/hed-specification/master/hedxml/${version}.xml")
+        val schemaLink = java.net.URI("https://raw.githubusercontent.com/hed-standard/hed-specification/master/hedxml/${version}.xml").toURL()
         val xmlData = schemaLink.readText()
         val hedXmlModel: HedXmlModel
         try {
@@ -479,7 +487,7 @@ class CTagger(
             val retval = fileChooser.showSaveDialog(frame)
             if (retval == JFileChooser.APPROVE_OPTION) {
                 var file = fileChooser.selectedFile ?: return
-                if (!file.name.toLowerCase().endsWith(".json")) {
+                if (!file.name.lowercase().endsWith(".json")) {
                     file = File(file.parentFile, file.name + ".json")
                 }
                 try {
@@ -505,7 +513,6 @@ class CTagger(
             val allRows = parser.parseAll(file)
 
             // show dialog to verify categorical fields
-            var categoricalField = mutableListOf<String>()
             var isCancelled = false
 
             // create dialog
@@ -562,7 +569,7 @@ class CTagger(
                         if (!fieldMap.containsKey(field))
                             fieldMap[row[fieldIdx]] = BIDSFieldDict()
 
-                        if (value.isEmpty() || value.toLowerCase() == "n/a")
+                        if (value.isEmpty() || value.lowercase() == "n/a")
                             fieldMap[field]?.HED = hed
                         else { // categorical values
                             if (fieldMap[field]?.HED.toString().isEmpty()) { // if first time
@@ -584,7 +591,7 @@ class CTagger(
                 fieldMap.forEach {
                     // assuming that first row contains field names as BIDS TSV
                     // add fields to combo box
-                    fieldList.addFieldFromDict(it.key.toLowerCase(), it.value)
+                    fieldList.addFieldFromDict(it.key.lowercase(), it.value)
                 }
                 // initialize tagging GUI
                 eventCodeList.codeSet = fieldList.fieldAndUniqueCodeMap[fieldList.selectedItem!!]!! // add codes of current field
@@ -693,7 +700,7 @@ class CTagger(
             result.forEach {
                 // assuming that first row contains field names as BIDS TSV
                 // add fields to combo box
-                fieldList.addFieldFromDict(it.key.toLowerCase(), it.value)
+                fieldList.addFieldFromDict(it.key.lowercase(), it.value)
             }
             // initialize/update tagging GUI
             eventCodeList.codeSet = fieldList.fieldAndUniqueCodeMap[fieldList.selectedItem!!]!! // add codes of current field
@@ -718,7 +725,7 @@ class CTagger(
             result.forEach {
                 // assuming that first row contains field names as BIDS TSV
                 // add fields to combo box
-                fieldList.addFieldFromDict(it.key.toLowerCase(), it.value)
+                fieldList.addFieldFromDict(it.key.lowercase(), it.value)
             }
             // initialize/update tagging GUI
             eventCodeList.codeSet = fieldList.fieldAndUniqueCodeMap[fieldList.selectedItem!!]!! // add codes of current field

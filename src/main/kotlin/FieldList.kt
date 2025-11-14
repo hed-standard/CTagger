@@ -13,7 +13,7 @@ class FieldList(val tagger: CTagger): JComboBox<String>() {
                 val curField = it.item as String
                 println("Field $curField selected")
                 // set new field and new code list
-                if (selectedItem != null && fieldAndUniqueCodeMap.containsKey(selectedItem.toString()!!)) {
+                if (selectedItem != null && fieldAndUniqueCodeMap.containsKey(selectedItem.toString())) {
                     // get unique event codes
                     tagger.eventCodeList.codeSet = fieldAndUniqueCodeMap[selectedItem!!]!!
                 }
