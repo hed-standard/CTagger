@@ -1,5 +1,9 @@
 # CTagger
 
+[![Build Status](https://github.com/hed-standard/ctagger/workflows/Build%20and%20Test/badge.svg)](https://github.com/hed-standard/ctagger/actions)
+[![Release](https://img.shields.io/github/v/release/hed-standard/ctagger)](https://github.com/hed-standard/ctagger/releases)
+[![License](https://img.shields.io/github/license/hed-standard/ctagger)](LICENSE)
+
 ![CTagger Interface](assets/images/CTaggerLauncher.png)
 
 CTagger is a desktop application for annotating neuroimaging experiment events using the Hierarchical Event Descriptor (HED) standard. It provides a graphical interface with automatic tag suggestions, validation, and HED schema browsing capabilities.
@@ -28,7 +32,7 @@ Run the downloaded JAR file:
 java -jar CTagger.jar
 ```
 
-**Requirements:** Java Runtime Environment (JRE) 17 or higher
+**Requirements:** Java Runtime Environment (JRE) 8 or higher
 
 ### EEGLAB Plugin
 
@@ -38,7 +42,7 @@ CTagger is integrated into EEGLAB through the [HEDTools plugin](https://www.hedt
 
 ### Prerequisites
 
-- **Java JDK 21 or higher**
+- **Java JDK 8 or higher** (tested with JDK 21)
 - **Gradle 8.5+** (wrapper included)
 
 ### Build Instructions
