@@ -5,7 +5,7 @@ All notable changes to CTagger will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2025-11-19
+## [4.0.0] - 2025-11-19
 
 ### Changed
 - **IMPORTANT**: Downgraded Java bytecode target from 17 to 8 for MATLAB compatibility
@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated documentation to reflect Java 8+ requirements
 
 ### Added
-- Semantic versioning (1.0.0)
+- Semantic versioning (4.0.0)
 - Version metadata embedded in JAR manifest
 - VERSION file for version tracking
 - GitHub Actions workflows:
@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - CodeQL security scanning
 - Build status badges in README
 - Comprehensive README with download, usage, and build instructions
+- CHANGELOG.md following Keep a Changelog format
 
 ### Fixed
 - Removed hardcoded Windows-specific JAVA_HOME from gradle.properties
@@ -59,11 +60,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Historical Context
 
-Prior to version 1.0.0, CTagger was modernized with:
-- Java 21 runtime requirement
-- Kotlin and Gradle upgrades
-- Security updates for dependencies
+Prior to version 4.0.0, CTagger required Java 17. This release downgrades the Java requirement to version 8 to ensure compatibility with older MATLAB installations (R2017b+) while maintaining modern build tooling and security updates.
 
-This release (1.0.0) reverts the Java requirement to version 8 to ensure compatibility with older MATLAB installations while maintaining modern build tooling and security updates.
-
-[1.0.0]: https://github.com/hed-standard/ctagger/releases/tag/v1.0.0
+[4.0.0]: https://github.com/hed-standard/ctagger/releases/tag/v4.0.0
