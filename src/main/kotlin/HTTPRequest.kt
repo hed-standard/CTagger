@@ -15,7 +15,7 @@ import java.net.URLEncoder
 
 fun getHEDSessionInfo(hostURL:String):Pair<String,String> {
     val csrf_url = "$hostURL/services"
-    val url = java.net.URI(csrf_url).toURL()
+    val url = java.net.URL(csrf_url)
     val con: HttpURLConnection = url.openConnection() as HttpURLConnection
     val cookiesHeader = con.getHeaderField("Set-Cookie")
     val stream = BufferedReader(
@@ -45,7 +45,7 @@ fun toJson(map: Any): String {
 fun sendRequestToHEDServer(host:String,data:String): HEDResponse? {
     val services_url = "$host/services_submit?service=get_services"
     val cookies_csrf = getHEDSessionInfo(host)
-    val url = java.net.URI(services_url).toURL()
+    val url = java.net.URL(services_url)
     val con: HttpURLConnection = url.openConnection() as HttpURLConnection
     try {
         // set headers

@@ -161,7 +161,7 @@ class CTagger(
 
         menuItem = JMenuItem("Change schema version")
         menuItem.addActionListener {
-            val schemaList = java.net.URI("https://api.github.com/repos/hed-standard/hed-specification/contents/hedxml").toURL().readText()
+            val schemaList = java.net.URL("https://api.github.com/repos/hed-standard/hed-specification/contents/hedxml").readText()
             val sType = object : TypeToken<Array<SchemaListObject>>() { }.type
             val listObject: Array<SchemaListObject> = Gson().fromJson(schemaList, sType)
             val hedVersions =mutableListOf<String>()
@@ -386,7 +386,7 @@ class CTagger(
      * @param version   Version of the schema
      */
     private fun getHedXmlModel(version: String = "HEDLatest") {
-        val schemaLink = java.net.URI("https://raw.githubusercontent.com/hed-standard/hed-specification/master/hedxml/${version}.xml").toURL()
+        val schemaLink = java.net.URL("https://raw.githubusercontent.com/hed-standard/hed-specification/master/hedxml/${version}.xml")
         val xmlData = schemaLink.readText()
         val hedXmlModel: HedXmlModel
         try {
@@ -487,7 +487,7 @@ class CTagger(
             val retval = fileChooser.showSaveDialog(frame)
             if (retval == JFileChooser.APPROVE_OPTION) {
                 var file = fileChooser.selectedFile ?: return
-                if (!file.name.lowercase().endsWith(".json")) {
+                if (!file.name.toLowerCase().endsWith(".json")) {
                     file = File(file.parentFile, file.name + ".json")
                 }
                 try {
@@ -569,7 +569,7 @@ class CTagger(
                         if (!fieldMap.containsKey(field))
                             fieldMap[row[fieldIdx]] = BIDSFieldDict()
 
-                        if (value.isEmpty() || value.lowercase() == "n/a")
+                        if (value.isEmpty() || value.toLowerCase() == "n/a")
                             fieldMap[field]?.HED = hed
                         else { // categorical values
                             if (fieldMap[field]?.HED.toString().isEmpty()) { // if first time
@@ -591,7 +591,7 @@ class CTagger(
                 fieldMap.forEach {
                     // assuming that first row contains field names as BIDS TSV
                     // add fields to combo box
-                    fieldList.addFieldFromDict(it.key.lowercase(), it.value)
+                    fieldList.addFieldFromDict(it.key.toLowerCase(), it.value)
                 }
                 // initialize tagging GUI
                 eventCodeList.codeSet = fieldList.fieldAndUniqueCodeMap[fieldList.selectedItem!!]!! // add codes of current field
@@ -700,7 +700,7 @@ class CTagger(
             result.forEach {
                 // assuming that first row contains field names as BIDS TSV
                 // add fields to combo box
-                fieldList.addFieldFromDict(it.key.lowercase(), it.value)
+                fieldList.addFieldFromDict(it.key.toLowerCase(), it.value)
             }
             // initialize/update tagging GUI
             eventCodeList.codeSet = fieldList.fieldAndUniqueCodeMap[fieldList.selectedItem!!]!! // add codes of current field
@@ -725,7 +725,7 @@ class CTagger(
             result.forEach {
                 // assuming that first row contains field names as BIDS TSV
                 // add fields to combo box
-                fieldList.addFieldFromDict(it.key.lowercase(), it.value)
+                fieldList.addFieldFromDict(it.key.toLowerCase(), it.value)
             }
             // initialize/update tagging GUI
             eventCodeList.codeSet = fieldList.fieldAndUniqueCodeMap[fieldList.selectedItem!!]!! // add codes of current field
