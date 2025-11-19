@@ -8,7 +8,7 @@ plugins {
 }
 
 group 'CTagger'
-version '1.0.0'
+version '4.0.0'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
