@@ -35,10 +35,12 @@ After importing, you'll see the main CTagger tagging interface:
 1. **Tagging field dropdown**: Toggle between different fields (event columns)
 
 2. **Field levels panel** (left side):
+
    - For **categorical fields**: Lists all unique values for the selected field
    - For **continuous/value fields**: Shows a single **HED** item where you can specify a template using the `#` symbol
 
 3. **Tag editor panel** (right side):
+
    - Build your HED annotation here
    - Tags are inserted as you type or select them
 
@@ -59,11 +61,13 @@ CTagger provides several features to help you quickly and easily construct HED a
 As you type in the tag editor, CTagger compares your input to all schema nodes and displays matching tags in the **Search Results** box below the cursor.
 
 **Navigation**:
+
 - Press the **down-arrow key** to scroll through results
 - Press **Enter/Return** to select and insert a tag
 - Or click on a tag with your mouse to select it
 
 **Behavior**:
+
 - CTagger inserts the **short-form** tag, replacing your input sequence
 - The Search Results box disappears after selection
 - Press **Esc** or click outside the box to dismiss it without selecting
@@ -77,6 +81,7 @@ Tags are matched case-insensitively against their **long-form** representation.
 Click the **Show HED schema** button to browse the HED schema hierarchy interactively.
 
 **Features**:
+
 - Expand/collapse nodes that contain children
 - Click on any node to insert its **short-form** tag
 - For nodes that take values, click the **#** symbol underneath to insert the node name followed by `/`
@@ -89,10 +94,12 @@ Click the **Show HED schema** button to browse the HED schema hierarchy interact
 In HED, tags can be grouped together using parentheses to indicate they modify each other and should be interpreted as a unit.
 
 **Examples**:
+
 - `(Triangle, Green)` describes a green triangle
 - Nested groups can describe more complex relationships
 
 **Formatting in CTagger**:
+
 - Use **Newline** and **Tab** keys to format nested groups for readability
 - CTagger will automatically strip newlines and tabs from the final HED string
 - This ensures compatibility with BIDS and other formats
@@ -168,6 +175,7 @@ For complex event structures with many tag groups:
 ### Iterative validation
 
 Validate frequently as you build annotations:
+
 - Fix errors early before they compound
 - Use validation messages to learn HED rules
 - Validate individual strings first, then validate all at the end
@@ -186,13 +194,13 @@ Validate frequently as you build annotations:
 
 ## Keyboard shortcuts
 
-| Action | Shortcut |
-|--------|----------|
-| Insert newline | Enter (when not selecting from search) |
-| Add tab indentation | Tab |
-| Dismiss search results | Esc |
-| Navigate search results | Up/Down arrow keys |
-| Select from search | Enter/Return |
+| Action                  | Shortcut                               |
+| ----------------------- | -------------------------------------- |
+| Insert newline          | Enter (when not selecting from search) |
+| Add tab indentation     | Tab                                    |
+| Dismiss search results  | Esc                                    |
+| Navigate search results | Up/Down arrow keys                     |
+| Select from search      | Enter/Return                           |
 
 ## Troubleshooting
 
@@ -201,6 +209,7 @@ Validate frequently as you build annotations:
 **Problem**: Tags are marked as invalid
 
 **Solutions**:
+
 - Check spelling and capitalization (use search/browser)
 - Ensure required children are included (consult schema)
 - Verify tag groups are properly closed with parentheses
@@ -211,6 +220,7 @@ Validate frequently as you build annotations:
 **Problem**: Built annotations don't appear in output
 
 **Solutions**:
+
 - Ensure an item is selected in the Field levels panel
 - Check that you've clicked into the tag editor area
 - Verify you're on the correct field in the dropdown
@@ -220,6 +230,7 @@ Validate frequently as you build annotations:
 **Problem**: Can't see schema tags or autocomplete doesn't work
 
 **Solutions**:
+
 - Check internet connection (if loading from repository)
 - Try loading a local schema file
 - Restart CTagger
@@ -230,6 +241,7 @@ Validate frequently as you build annotations:
 **Problem**: Can't import events.json or events.tsv
 
 **Solutions**:
+
 - Verify file is valid JSON/TSV format
 - Check that events.json has proper BIDS structure
 - Ensure categorical fields are properly defined with "Levels" key

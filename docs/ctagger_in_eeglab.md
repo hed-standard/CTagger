@@ -78,7 +78,7 @@ Instructions on downloading and using the standalone version of CTagger, as well
 
 ### Tagging the events
 
-A brief step-by-step guide to selecting tags can be found at [**HED annotation quickstart**](https://www.hedtags.org/HedAnnotationQuickstart.html). The following shows example annotations using the process suggested in the quickstart. We will import the annotation saved in the **_events.json** file format. Download the file [**eeglab-tutorial_events.json**](./_static/data/eeglab-tutorial_events.json) then select:
+A brief step-by-step guide to selecting tags can be found at [**HED annotation quickstart**](https://www.hedtags.org/HedAnnotationQuickstart.html). The following shows example annotations using the process suggested in the quickstart. We will import the annotation saved in the **\_events.json** file format. Download the file [**eeglab-tutorial_events.json**](./_static/data/eeglab-tutorial_events.json) then select:
 
 > **File → Import → Import BIDS events.json file**
 
@@ -102,7 +102,7 @@ If the annotation was correct, a message will appear confirming the validity:
 
 Click **Finish** on the main CTagger window to end the annotation.
 
-The tag review window will show up again for a final review and the option to save the annotation into an **_events.json** file for distribution just as with the **eeglab-tutorial_events.json**. Hit **Ok** to continue after that.
+The tag review window will show up again for a final review and the option to save the annotation into an **\_events.json** file for distribution just as with the **eeglab-tutorial_events.json**. Hit **Ok** to continue after that.
 
 A last window will pop up asking what you would like to overwrite the old dataset with the tagged one or save new dataset as a separate file. Click **Ok** when you're done.
 

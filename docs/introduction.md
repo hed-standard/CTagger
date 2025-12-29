@@ -21,6 +21,7 @@ For more information, visit the HED project [homepage](https://www.hedtags.org) 
 - **Field-level tagging** for both categorical and continuous event data
 
 CTagger is particularly useful for:
+
 - Researchers new to HED who want visual guidance for tag selection
 - Annotating BIDS datasets with complex event structures
 - Exploring HED schema hierarchies interactively
@@ -29,12 +30,19 @@ CTagger is particularly useful for:
 ### Related tools and resources
 
 - **[HED homepage](https://www.hedtags.org)**: Overview and links for HED
+
 - **[HED resources](https://www.hedtags.org/hed-resources)**: Comprehensive tutorials and documentation
+
 - **[HED schema browser](https://www.hedtags.org/hed-schema-browser)**: Browser for HED vocabularies
+
 - **[HED specification](https://www.hedtags.org/hed-specification/)**: Formal specification defining HED annotation rules
+
 - **[HED online tools](https://hedtools.org/hed)**: Web-based tools requiring no installation
+
 - **[Python HEDTools](https://www.hedtags.org/hed-python)**: Python library for HED validation and analysis
+
 - **[MATLAB HEDTools](https://www.hedtags.org/hed-matalb)**: MATLAB library for HED validation and analysis
+
 - **[HED examples](https://github.com/hed-standard/hed-examples)**: Example datasets annotated with HED
 
 - **[HED MATLAB tools](https://www.hedtags.org/hed-matlab)**: MATLAB wrapper for Python tools
@@ -54,6 +62,7 @@ java -version
 You should see output like `java version "1.8.0_211"` or `openjdk version "11.0.11"` or higher.
 
 If Java is not installed, download and install it from:
+
 - [Adoptium](https://adoptium.net/) (recommended)
 - [Oracle](https://www.oracle.com/java/technologies/downloads/)
 
@@ -66,6 +75,7 @@ If Java is not installed, download and install it from:
    **macOS users**: You may need to update Security settings to allow the app to run.
 
    **Linux users**: You might need to make the jar executable first:
+
    ```bash
    chmod +x CTagger.jar
    ```
