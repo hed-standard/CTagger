@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install mdformat>=0.7.0 mdformat-myst>=0.1.5 mdformat-tables>=0.4.0
+          pip install mdformat>=0.7.5 mdformat-myst>=0.3.0 mdformat-tables>=1.0.0
           
       - name: Run mdformat (check only)
         run: |
