@@ -10,11 +10,11 @@ CTagger is a desktop application for annotating neuroimaging experiment events u
 
 ## About HED
 
-The Hierarchical Event Descriptor (HED) is a standard for describing experiment events in neuroimaging data. HED enables detailed, human-readable, and machine-actionable annotation of events, making shared data analysis-ready. Learn more at [hedtags.org](https://www.hedtags.org).
+The Hierarchical Event Descriptor (HED) is a standard for describing experiment events in neuroimaging data. HED enables detailed, human-readable, and machine-actionable annotation of events, making shared data analysis-ready. Learn more at [www.hedtags.org](https://www.hedtags.org).
 
 ## Documentation
 
-For detailed usage instructions and tutorials, see the [CTagger User Guide](https://www.hedtags.org/hed-resources/CTaggerGuide.html).
+For detailed usage instructions and tutorials, see the CTagger [**user guide](https://www.hedtags.org/CTagger/user_guide.html).
 
 ## Download
 
