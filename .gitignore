@@ -123,4 +123,6 @@ Desktop.ini
 ## Status Reports
 #################
 status/
+.status/
+.github/copilot-instructions.md
 

@@ -24,7 +24,7 @@ Download the latest pre-built release from the [Releases page](https://github.co
 
 CTagger can be used in two ways:
 
-### Standalone Application
+### Standalone application
 
 Run the downloaded JAR file:
 
@@ -34,18 +34,18 @@ java -jar CTagger.jar
 
 **Requirements:** Java Runtime Environment (JRE) 8 or higher
 
-### EEGLAB Plugin
+### EEGLAB plugin
 
 CTagger is integrated into EEGLAB through the [HEDTools plugin](https://www.hedtags.org/hed-resources/HedMatlabTools.html#eeglab-plug-in-integration).
 
-## Building from Source
+## Building from source
 
 ### Prerequisites
 
 - **Java JDK 8 or higher** (tested with JDK 21)
 - **Gradle 8.5+** (wrapper included)
 
-### Build Instructions
+### Build instructions
 
 1. Clone the repository:
    ```bash
@@ -68,7 +68,7 @@ CTagger is integrated into EEGLAB through the [HEDTools plugin](https://www.hedt
    build/libs/CTagger.jar
    ```
 
-### Running Locally
+### Running locally
 
 After building, run the application:
 
@@ -78,14 +78,14 @@ java -jar build/libs/CTagger.jar
 
 ## Development
 
-### Project Structure
+### Project structure
 
 - `src/main/kotlin/` - Kotlin source files
 - `src/main/java/` - Java source files  
 - `build.gradle` - Gradle build configuration
 - `gradle/` - Gradle wrapper files
 
-### Technology Stack
+### Technology stack
 
 - **Language:** Kotlin 1.9.25 + Java
 - **Build System:** Gradle 8.5
@@ -97,7 +97,7 @@ java -jar build/libs/CTagger.jar
   - kotlinx-coroutines 1.5.1 (async operations)
   - univocity-parsers 2.9.0 (CSV/TSV parsing)
 
-### Building for Development
+### Building for development
 
 Clean and build with full output:
 
@@ -111,7 +111,7 @@ Run tests:
 ./gradlew test
 ```
 
-## HED Validation
+## HED validation
 
 CTagger validates annotations against HED schemas using the [HED validation service](https://hedtools.org/hed/services). The default schema version is 8.4.0, but other versions can be selected from the application menu.
 
@@ -126,6 +126,6 @@ Bug reports and feature requests can be submitted through [GitHub Issues](https:
 
 ## Support
 
-- **User guide:** [https://www.hedtags.org/hed-resources/CTaggerGuide.html](https://www.hedtags.org/hed-resources/CTaggerGuide.html)
+- **User guide:** [https://www.hedtags.org/ctagger/user_guide.html](https://www.hedtags.org/ctagger/user_guide.html)
 - **HED homepage:** [https://www.hedtags.org](https://www.hedtags.org)
 - **Issues:** [GitHub Issues](https://github.com/hed-standard/ctagger/issues)
