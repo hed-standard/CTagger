@@ -2,12 +2,12 @@
 
 All notable changes to CTagger will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [4.0.0] - 2025-11-19
 
 ### Changed
+
 - **IMPORTANT**: Downgraded Java bytecode target from 17 to 8 for MATLAB compatibility
   - CTagger now works with MATLAB R2017b and newer (which include Java 8)
   - Addresses compatibility issue with MATLAB versions prior to R2024a
@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated documentation to reflect Java 8+ requirements
 
 ### Added
+
 - Semantic versioning (4.0.0)
 - Version metadata embedded in JAR manifest
 - VERSION file for version tracking
@@ -29,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CHANGELOG.md following Keep a Changelog format
 
 ### Fixed
+
 - Removed hardcoded Windows-specific JAVA_HOME from gradle.properties
 - Fixed deprecated Gradle syntax for Java 9+ compatibility
 - Cleaned up 12+ compiler warnings (removed unused variables, unnecessary null assertions)
@@ -36,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Corrected HED validation API parameters (sidecar_string, check_for_warnings)
 
 ### Infrastructure
+
 - Upgraded Gradle from 6.9 to 8.5
 - Upgraded Kotlin from 1.5.21 to 1.9.25
 - Updated Gson from 2.8.7 to 2.10.1 (security fix)
@@ -44,19 +47,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Organized documentation and images into structured directories
 
 ### Documentation
+
 - Reorganized repository documentation
 - Moved old docs to status/old_docs for archival
 - Updated CTagger Guide with current Java requirements
 - Changed repository references from VisLab to hed-standard
 
 ### Runtime Requirements
+
 - **Java Runtime Environment (JRE) 8 or higher**
 
 ### Build Requirements
+
 - **Java JDK 8 or higher** (tested with JDK 21)
 - **Gradle 8.5+** (wrapper included)
 
----
+______________________________________________________________________
 
 ## Historical Context
 
