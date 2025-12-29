@@ -78,7 +78,7 @@ Instructions on downloading and using the standalone version of CTagger, as well
 
 ### Tagging the events
 
-A brief step-by-step guide to selecting tags can be found at [**HED annotation quickstart**](https://www.hedtags.org/HedAnnotationQuickstart.html). The following shows example annotations using the process suggested in the quickstart. We will import the annotation saved in the **\_events.json** file format. Download the file [**eeglab-tutorial_events.json**](./_static/data/eeglab-tutorial_events.json) then select:
+A brief step-by-step guide to selecting tags can be found at [**HED annotation quickstart**](https://www.hedtags.org/hed-resources/HedAnnotationQuickstart.html). The following shows example annotations using the process suggested in the quickstart. We will import the annotation saved in the **\_events.json** file format. Download the file [**eeglab-tutorial_events.json**](./_static/data/eeglab-tutorial_events.json) then select:
 
 > **File → Import → Import BIDS events.json file**
 
