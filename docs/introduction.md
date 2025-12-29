@@ -41,7 +41,7 @@ CTagger is particularly useful for:
 
 - **[Python HEDTools](https://www.hedtags.org/hed-python)**: Python library for HED validation and analysis
 
-- **[MATLAB HEDTools](https://www.hedtags.org/hed-matalb)**: MATLAB library for HED validation and analysis
+- **[MATLAB HEDTools](https://www.hedtags.org/hed-matlab)**: MATLAB library for HED validation and analysis
 
 - **[HED examples](https://github.com/hed-standard/hed-examples)**: Example datasets annotated with HED
 
