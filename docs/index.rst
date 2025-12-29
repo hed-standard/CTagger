@@ -42,13 +42,14 @@ Getting started
 
    Introduction <introduction>
 
-User guide
-----------
+User guides
+-----------
 
 .. toctree::
    :maxdepth: 2
 
    User guide <user_guide>
+   CTagger in EEGLAB <ctagger_in_eeglab>
 
 
 Indices and tables

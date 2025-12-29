@@ -1,0 +1,3 @@
+[codespell]
+skip = .git,*.pdf,*.svg,deprecated,*.xml,*.mediawiki,*.omn,*.jar,*.class,build,gradle,.gradle,.venv,src
+ignore-words-list = covert,hed,recuse,disjointness,parms,kotlin

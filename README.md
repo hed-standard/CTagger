@@ -1,8 +1,6 @@
 # CTagger
 
-[![Build Status](https://github.com/hed-standard/ctagger/workflows/Build%20and%20Test/badge.svg)](https://github.com/hed-standard/ctagger/actions)
-[![Release](https://img.shields.io/github/v/release/hed-standard/ctagger)](https://github.com/hed-standard/ctagger/releases)
-[![License](https://img.shields.io/github/license/hed-standard/ctagger)](LICENSE)
+[![Build Status](https://github.com/hed-standard/ctagger/workflows/Build%20and%20Test/badge.svg)](https://github.com/hed-standard/ctagger/actions) [![Release](https://img.shields.io/github/v/release/hed-standard/ctagger)](https://github.com/hed-standard/ctagger/releases) [![License](https://img.shields.io/github/license/hed-standard/ctagger)](LICENSE)
 
 ![CTagger Interface](assets/images/CTaggerLauncher.png)
 
@@ -10,11 +8,11 @@ CTagger is a desktop application for annotating neuroimaging experiment events u
 
 ## About HED
 
-The Hierarchical Event Descriptor (HED) is a standard for describing experiment events in neuroimaging data. HED enables detailed, human-readable, and machine-actionable annotation of events, making shared data analysis-ready. Learn more at [hedtags.org](https://www.hedtags.org).
+The Hierarchical Event Descriptor (HED) is a standard for describing experiment events in neuroimaging data. HED enables detailed, human-readable, and machine-actionable annotation of events, making shared data analysis-ready. Learn more at [www.hedtags.org](https://www.hedtags.org).
 
 ## Documentation
 
-For detailed usage instructions and tutorials, see the [CTagger User Guide](https://www.hedtags.org/hed-resources/CTaggerGuide.html).
+For detailed usage instructions and tutorials, see the CTagger [\*\*user guide](https://www.hedtags.org/CTagger/user_guide.html).
 
 ## Download
 
@@ -48,22 +46,26 @@ CTagger is integrated into EEGLAB through the [HEDTools plugin](https://www.hedt
 ### Build instructions
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/hed-standard/ctagger.git
    cd ctagger
    ```
 
 2. Build the JAR:
+
    ```bash
    ./gradlew jar
    ```
-   
+
    On Windows:
+
    ```cmd
    gradlew.bat jar
    ```
 
 3. The compiled JAR will be located at:
+
    ```
    build/libs/CTagger.jar
    ```
@@ -81,7 +83,7 @@ java -jar build/libs/CTagger.jar
 ### Project structure
 
 - `src/main/kotlin/` - Kotlin source files
-- `src/main/java/` - Java source files  
+- `src/main/java/` - Java source files
 - `build.gradle` - Gradle build configuration
 - `gradle/` - Gradle wrapper files
 
@@ -90,7 +92,7 @@ java -jar build/libs/CTagger.jar
 - **Language:** Kotlin 1.9.25 + Java
 - **Build System:** Gradle 8.5
 - **GUI Framework:** Java Swing
-- **Dependencies:** 
+- **Dependencies:**
   - Gson 2.10.1 (JSON parsing)
   - Jsoup 1.17.2 (HTML parsing)
   - Fuel 2.3.0 (HTTP client)
@@ -122,7 +124,6 @@ Bug reports and feature requests can be submitted through [GitHub Issues](https:
 ## License
 
 [**MIT Licence**](LICENSE)
-
 
 ## Support
 
