@@ -17,12 +17,11 @@ CTagger
    
    * `CTagger releases <https://github.com/hed-standard/ctagger/releases>`_
 
-Welcome to the CTagger documentation! CTagger is a desktop application for annotating neuroimaging experiment events using the **Hierarchical Event Descriptor (HED)** standard. It provides a graphical interface with automatic tag suggestions, validation, and HED schema browsing capabilities.
-
-What is CTagger?
-----------------
-
-CTagger provides a user-friendly graphical interface for creating HED annotations. It can be used as a standalone application or integrated into EEGLAB through the HEDTools plugin.
+Welcome to the CTagger documentation! CTagger is a desktop application for annotating
+neuroimaging experiment events using the **Hierarchical Event Descriptor (HED)** standard.
+It provides a graphical interface with automatic tag suggestions, validation,
+and HED schema browsing capabilities. CTagger can be used as a standalone application 
+or integrated into EEGLAB through the HEDTools plugin.
 
 Key features
 ------------
@@ -34,16 +33,8 @@ Key features
 * **BIDS integration**: Import and export BIDS event files and sidecars
 * **Field-level tagging**: Support for categorical and continuous event fields
 
-Getting started
----------------
-
-.. toctree::
-   :maxdepth: 2
-
-   Introduction <introduction>
-
-User guides
------------
+Guides
+-------
 
 .. toctree::
    :maxdepth: 2
@@ -56,4 +47,3 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`search`
