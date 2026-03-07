@@ -90,6 +90,8 @@ CTagger is integrated into EEGLAB through the **HEDTools plugin**:
 2. Install the **HEDTools** plugin
 3. After loading a dataset, HED options appear in the **Edit** menu
 
+The source code for the HEDTools plugin is available at [https://github.com/sccn/HEDTools](https://github.com/sccn/HEDTools).
+
 ## Quick start
 
 1. **Launch CTagger** by running the JAR file
