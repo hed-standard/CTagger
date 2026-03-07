@@ -34,7 +34,7 @@ java -jar CTagger.jar
 
 ### EEGLAB plugin
 
-CTagger is integrated into EEGLAB through the [HEDTools plugin](https://www.hedtags.org/hed-resources/HedMatlabTools.html#eeglab-plug-in-integration).
+CTagger is integrated into EEGLAB through the [HEDTools plugin](https://www.hedtags.org/hed-resources/CTagger/ctagger_in_eeglab.html).
 
 ## Building from source
 

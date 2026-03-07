@@ -34,6 +34,9 @@ https://www.sciencedirect.com/science/article/pii/S1388245717309069
 # HED tools services (programmatic access blocked)
 ^https?://hedtools\.org/hed/services_submit
 
+# SCCN/EEGLAB links (blocks automated requests)
+https://sccn.ucsd.edu/eeglab/plugin_uploader/plugin_list_all.php
+
 # Neuroinformatics registration (certificate issues)
 ^https?://neuroinformatics\.incf\.org/
 
