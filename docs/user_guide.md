@@ -90,8 +90,6 @@ CTagger is integrated into EEGLAB through the **HEDTools plugin**:
 2. Install the **HEDTools** plugin
 3. After loading a dataset, HED options appear in the **Edit** menu
 
-For more details, see the [MATLAB HEDTools documentation](https://www.hedtags.org/hed-resources/HedMatlabTools.html#eeglab-plug-in-integration).
-
 ## Quick start
 
 1. **Launch CTagger** by running the JAR file
@@ -147,7 +145,7 @@ From the CTagger launcher window, you can import either BIDS event dictionaries 
 
 ![CTagger Launcher](_static/images/CTaggerLauncher.png)
 
-### Importing event dictionaries (events.json)
+### Importing JSON sidecars
 
 If you select **Import BIDS event dictionary**, you'll be prompted to choose an `events.json` file. CTagger will automatically:
 
@@ -155,7 +153,7 @@ If you select **Import BIDS event dictionary**, you'll be prompted to choose an 
 - Consider each sub-level as a categorical value for that field
 - Treat all other fields as having continuous values
 
-### Importing event spreadsheets (events.tsv)
+### Importing tabular files
 
 If you select **Import BIDS event spreadsheet** and choose an `events.tsv` file, CTagger will ask you to specify which fields are categorical.
 
