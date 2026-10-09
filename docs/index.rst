@@ -9,13 +9,32 @@ CTagger
 
    * `HED online tools <https://hedtools.org/hed/>`_
 
-   * `HED browser tools <https://www.hedtags.org/hed-javascript>`_
+   * `HED browser tools <https://www.hedtags.org/hed-web>`_
 
    * `HED organization  <https://github.com/hed-standard/>`_  
 
    * `HED specification <https://www.hedtags.org/hed-specification>`_
    
    * `CTagger releases <https://github.com/hed-standard/ctagger/releases>`_
+
+.. raw:: html
+
+   <div style="background-color: #c62828; color: #ffffff; padding: 1em 1.25em; border-radius: 6px; margin: 1em 0;">
+   <strong>CTagger is no longer supported.</strong> This repository will be archived and CTagger will be
+   removed from the <a href="https://www.hedtags.org/hed-resources" style="color: #ffffff; text-decoration: underline;">HED resources</a>
+   documentation on December 31, 2026. The last release stays available on the
+   <a href="https://github.com/hed-standard/ctagger/releases" style="color: #ffffff; text-decoration: underline;">Releases page</a>
+   but will not be updated.
+   </div>
+
+.. note::
+
+   **Replacements:** HED annotation is moving to `HEDit <https://annotation.garden/hedit/>`_, the
+   browser-based annotation tool of the `Annotation Garden Initiative <https://annotation.garden/>`_,
+   open infrastructure for collaborative annotation of neuroscience stimuli built on the BIDS and
+   HED standards. For editing HED in a code editor, use
+   `hed-lsp <https://github.com/hed-standard/hed-lsp>`_, the HED Language Server Protocol extension
+   for VS Code, which validates annotations as you type.
 
 Welcome to the CTagger documentation! CTagger is a desktop application for annotating
 neuroimaging experiment events using the **Hierarchical Event Descriptor (HED)** standard.
